@@ -1,0 +1,972 @@
+[
+    {
+        "name": "openssl",
+        "url": "https://github.com/openssl/openssl",
+        "files": [
+            "libcrypto.so",
+            "libssl.so"
+        ]
+    },
+    {
+        "name": "Tongsuo",
+        "url": "https://github.com/Tongsuo-Project/Tongsuo",
+        "files": [
+            "libcrypto.so",
+            "libssl.so"
+        ]
+    },
+    {
+        "name": "LibreSSL",
+        "url": "https://github.com/libressl/portable",
+        "files": [
+            "libcrypto.so",
+            "libssl.so",
+            "libtls.so",
+            "libcrypto.a",
+            "libssl.a",
+            "libtls.a"
+        ]
+    },
+    {
+        "name": "GmSSL",
+        "url": "https://github.com/guanzhi/GmSSL",
+        "files": [
+            "libgmssl.so"
+        ]
+    },
+    {
+        "name": "mbedtls",
+        "url": "https://github.com/Mbed-TLS/mbedtls",
+        "files": [
+            "libmbedtls.so",
+            "libmbedx509.so",
+            "libmbedcrypto.so",
+            "libmbedtls.a",
+            "libmbedcrypto.a",
+            "libmbedx509.a"
+        ]
+    },
+    {
+        "name": "libsodium",
+        "url": "https://github.com/jedisct1/libsodium",
+        "files": [
+            "libsodium.so",
+            "libsodium.a"
+        ]
+    },
+    {
+        "name": "wolfssl",
+        "url": "https://github.com/wolfSSL/wolfssl",
+        "files": [
+            "libwolfssl.so"
+        ]
+    },
+    {
+        "name": "nettle",
+        "url": "https://github.com/gnutls/nettle",
+        "files": [
+            "libnettle.so",
+            "libhogweed.so"
+        ]
+    },
+    {
+        "name": "libtomcrypt",
+        "url": "https://github.com/libtom/libtomcrypt",
+        "files": [
+            "libtomcrypt.so",
+            "libtomcrypt.a"
+        ]
+    },
+    {
+        "name": "libbcrypt",
+        "url": "https://github.com/rg3/libbcrypt",
+        "files": [
+            "bcrypt.o"
+        ]
+    },
+    {
+        "name": "tiny-AES-c",
+        "url": "https://github.com/kokke/tiny-AES-c",
+        "files": [
+            "aes.o",
+            "aes.c.o"
+        ]
+    },
+    {
+        "name": "boringssl",
+        "url": "https://github.com/google/boringssl",
+        "files": [
+            "libcrypto.so",
+            "libssl.so",
+            "libdecrepit.so",
+            "libcrypto.a",
+            "libssl.a",
+            "libdecrepit.a"
+        ]
+    },
+    {
+        "name": "tea-c",
+        "url": "https://github.com/coderarjob/tea-c",
+        "files": [
+            "tea"
+        ]
+    },
+    {
+        "name": "cryptopp",
+        "url": "https://github.com/weidai11/cryptopp",
+        "files": [
+            "libcryptopp.so",
+            "libcryptopp.a"
+        ]
+    },
+    {
+        "name": "botan",
+        "url": "https://github.com/randombit/botan",
+        "files": [
+            "libbotan-3.so",
+            "libbotan-3.a",
+            "botan"
+        ]
+    },
+    {
+        "name": "FFmpeg",
+        "url": "https://github.com/FFmpeg/FFmpeg",
+        "files": [
+            "ffmpeg_g",
+            "ffprobe_g"
+        ]
+    },
+    {
+        "name": "aubio",
+        "url": "https://github.com/aubio/aubio",
+        "files": [
+            "libaubio.so"
+        ]
+    },
+    {
+        "name": "redis",
+        "url": "https://github.com/redis/redis",
+        "files": [
+            "redis-cli",
+            "redis-server"
+        ]
+    },
+    {
+        "name": "curl",
+        "url": "https://github.com/curl/curl",
+        "files": [
+            "libcurl.so"
+        ]
+    },
+    {
+        "name": "masscan",
+        "url": "https://github.com/robertdavidgraham/masscan",
+        "files": [
+            "masscan"
+        ]
+    },
+    {
+        "name": "whisper.cpp",
+        "url": "https://github.com/ggerganov/whisper.cpp",
+        "files": [
+            "main",
+            "server",
+            "bench",
+            "quantize"
+        ]
+    },
+    {
+        "name": "llama2.c",
+        "url": "https://github.com/karpathy/llama2.c",
+        "files": [
+            "run",
+            "runq"
+        ]
+    },
+    {
+        "name": "zstd",
+        "url": "https://github.com/facebook/zstd",
+        "files": [
+            "libzstd.so",
+            "libzstd.a"
+        ]
+    },
+    {
+        "name": "7z",
+        "url": "https://github.com/kornelski/7z",
+        "files": [
+            "7zz"
+        ]
+    },
+    {
+        "name": "zlib",
+        "url": "https://github.com/madler/zlib",
+        "files": [
+            "libz.so",
+            "minigzip64",
+            "minigzip",
+            "minigzipsh"
+        ]
+    },
+    {
+        "name": "ImageMagick",
+        "url": "https://github.com/ImageMagick/ImageMagick",
+        "files": [
+            "libMagickWand-7.Q16HDRI.so",
+            "libMagickCore-7.Q16HDRI.so",
+            "libMagick++-7.Q16HDRI.so"
+        ]
+    },
+    {
+        "name": "libvips",
+        "url": "https://github.com/libvips/libvips",
+        "files": [
+            "libvips.so"
+        ]
+    },
+    {
+        "name": "ultrajson",
+        "url": "https://github.com/ultrajson/ultrajson",
+        "files": [
+            "ultrajsondec.o",
+            "ultrajsonenc.o"
+        ]
+    },
+    {
+        "name": "libbson",
+        "url": "https://github.com/mongodb/libbson",
+        "star": 345,
+        "files": [
+            "libbson-1.0.so",
+            "libbson.a"
+        ]
+    },
+    {
+        "name": "libelf",
+        "url": "https://github.com/0intro/libelf",
+        "star": 47,
+        "files": [
+            "libelf.a"
+        ]
+    },
+    {
+        "name": "libexpat",
+        "url": "https://github.com/libexpat/libexpat",
+        "files": [
+            "libexpat.so"
+        ]
+    },
+    {
+        "name": "mongoose",
+        "url": "https://github.com/cesanta/mongoose",
+        "files": [
+            "libmongoose.so",
+            "libmongoose.a"
+        ]
+    },
+    {
+        "name": "libhv",
+        "url": "https://github.com/ithewei/libhv",
+        "files": [
+            "libhv.so"
+        ]
+    },
+    {
+        "name": "tmux",
+        "url": "https://github.com/tmux/tmux",
+        "files": [
+            "tmux"
+        ]
+    },
+    {
+        "name": "wrk",
+        "url": "https://github.com/wg/wrk",
+        "star": 37477,
+        "files": [
+            "wrk"
+        ]
+    },
+    {
+        "name": "beanstalkd",
+        "url": "https://github.com/beanstalkd/beanstalkd",
+        "star": 6531,
+        "files": [
+            "beanstalkd"
+        ]
+    },
+    {
+        "name": "mozjpeg",
+        "url": "https://github.com/mozilla/mozjpeg",
+        "star": 5422,
+        "files": [
+            "libturbojpeg.so",
+            "tjbench",
+            "rdjpgcom",
+            "wrjpgcom",
+            "cjpeg",
+            "jpegtran",
+            "djpeg"
+        ]
+    },
+    {
+        "name": "dsvpn",
+        "url": "https://github.com/jedisct1/dsvpn",
+        "star": 5165,
+        "files": [
+            "dsvpn"
+        ]
+    },
+    {
+        "name": "sc-im",
+        "url": "https://github.com/andmarti1424/sc-im",
+        "star": 4790,
+        "files": [
+            "sc-im"
+        ]
+    },
+    {
+        "name": "streem",
+        "url": "https://github.com/matz/streem",
+        "star": 4600,
+        "files": [
+            "streem"
+        ]
+    },
+    {
+        "name": "cava",
+        "url": "https://github.com/karlstav/cava",
+        "star": 4108,
+        "files": [
+            "cava"
+        ]
+    },
+    {
+        "name": "libmodbus",
+        "url": "https://github.com/stephane/libmodbus",
+        "star": 3397,
+        "files": [
+            "libmodbus.so"
+        ]
+    },
+    {
+        "name": "pspg",
+        "url": "https://github.com/okbob/pspg",
+        "star": 2429,
+        "files": [
+            "pspg"
+        ]
+    },
+    {
+        "name": "smenu",
+        "url": "https://github.com/p-gen/smenu",
+        "star": 2362,
+        "files": [
+            "smenu"
+        ]
+    },
+    {
+        "name": "blis",
+        "url": "https://github.com/flame/blis",
+        "star": 2238,
+        "files": [
+            "libblis.so",
+            "libblis.a"
+        ]
+    },
+    {
+        "name": "zlog",
+        "url": "https://github.com/HardySimpson/zlog",
+        "star": 2180,
+        "files": [
+            "zlog-chk-conf"
+        ]
+    },
+    {
+        "name": "libusb",
+        "url": "https://github.com/libusb/libusb",
+        "star": 5176,
+        "files": [
+            "libusb-1.0.so"
+        ]
+    },
+    {
+        "name": "jansson",
+        "url": "https://github.com/akheron/jansson",
+        "star": 3049,
+        "files": [
+            "libjansson.a",
+            "libjansson.so"
+        ]
+    },
+    {
+        "name": "json-c",
+        "url": "https://github.com/json-c/json-c",
+        "star": 2938,
+        "files": [
+            "libjson-c.so"
+        ]
+    },
+    {
+        "name": "julius",
+        "url": "https://github.com/bvschaik/julius",
+        "star": 2776,
+        "files": [
+            "julius"
+        ]
+    },
+    {
+        "name": "libui",
+        "url": "https://github.com/andlabs/libui",
+        "star": 10694,
+        "files": [
+            "libui.so"
+        ]
+    },
+    {
+        "name": "tini",
+        "url": "https://github.com/krallin/tini",
+        "star": 9747,
+        "files": [
+            "tini"
+        ]
+    },
+    {
+        "name": "vlmcsd",
+        "url": "https://github.com/Wind4/vlmcsd",
+        "star": 8335,
+        "files": [
+            "vlmcsd",
+            "vlmcs"
+        ]
+    },
+    {
+        "name": "quickjs",
+        "url": "https://github.com/bellard/quickjs",
+        "star": 8231,
+        "files": [
+            "qjs",
+            "qjsc"
+        ]
+    },
+    {
+        "name": "wasm3",
+        "url": "https://github.com/wasm3/wasm3",
+        "star": 7197,
+        "files": [
+            "wasm3"
+        ]
+    },
+    {
+        "name": "rtl_433",
+        "url": "https://github.com/merbanan/rtl_433",
+        "star": 6006,
+        "files": [
+            "rtl_433"
+        ]
+    },
+    {
+        "name": "clib",
+        "url": "https://github.com/clibs/clib",
+        "star": 4825,
+        "files": [
+            "clib-update",
+            "clib-uninstall",
+            "clib-configure",
+            "clib-init",
+            "clib-search",
+            "clib-upgrade",
+            "clib-build",
+            "clib-install",
+            "clib"
+        ]
+    },
+    {
+        "name": "can-utils",
+        "url": "https://github.com/linux-can/can-utils",
+        "star": 2351,
+        "files": [
+            "cansequence",
+            "j1939sr",
+            "isotpperf",
+            "isotptun",
+            "cangw",
+            "isotpdump",
+            "slcan_attach",
+            "isotprecv",
+            "canfdtest",
+            "testj1939",
+            "asc2log",
+            "j1939acd",
+            "log2asc",
+            "canplayer",
+            "slcanpty",
+            "j1939cat",
+            "cansend",
+            "cansniffer",
+            "canlogserver",
+            "j1939spy",
+            "bcmserver",
+            "cangen",
+            "slcand",
+            "isotpserver",
+            "isotpsend",
+            "isotpsniffer",
+            "canbusload",
+            "candump",
+            "log2long"
+        ]
+    },
+    {
+        "name": "cc65",
+        "url": "https://github.com/cc65/cc65",
+        "star": 2268,
+        "files": [
+            "ld65",
+            "grc65",
+            "ar65",
+            "cl65",
+            "od65",
+            "co65",
+            "cc65",
+            "da65",
+            "chrcvt65",
+            "ca65",
+            "sim65",
+            "sp65"
+        ]
+    },
+    {
+        "name": "acl",
+        "url": "https://github.com/acl-dev/acl",
+        "star": 2828,
+        "files": [
+            "libacl.so",
+            "setfacl",
+            "chacl",
+            "getfacl"
+        ]
+    },
+    {
+        "name": "lz4",
+        "url": "https://github.com/lz4/lz4",
+        "star": 10203,
+        "files": [
+            "lz4",
+            "lz4c",
+            "lz4cat",
+            "unlz4",
+            "liblz4.so"
+        ]
+    },
+    {
+        "name": "libarchive",
+        "url": "https://github.com/libarchive/libarchive",
+        "star": 2999,
+        "files": [
+            "bsdcat",
+            "bsdcpio",
+            "bsdtar",
+            "bsdunzip",
+            "libarchive.so"
+        ]
+    },
+    {
+        "name": "no-more-secrets",
+        "url": "https://github.com/bartobri/no-more-secrets",
+        "star": 7525,
+        "files": [
+            "sneakers",
+            "nms"
+        ]
+    },
+    {
+        "name": "flex",
+        "url": "https://github.com/westes/flex",
+        "star": 3550,
+        "files": [
+            "libfl.so",
+            "flex",
+            "flex++",
+            "lex"
+        ]
+    },
+    {
+        "name": "libffi",
+        "url": "https://github.com/libffi/libffi",
+        "star": 3165,
+        "files": [
+            "libffi.so"
+        ]
+    },
+    {
+        "name": "activate-linux",
+        "url": "https://github.com/MrGlockenspiel/activate-linux",
+        "star": 4319,
+        "files": [
+            "activate-linux"
+        ]
+    },
+    {
+        "name": "libbpf",
+        "url": "https://github.com/libbpf/libbpf",
+        "star": 2103,
+        "files": [
+            "libbpf.so"
+        ]
+    },
+
+    {
+        "name": "msquic",
+        "url": "https://github.com/microsoft/msquic",
+        "star": 4004,
+        "files": [
+            "libmsquic.so"
+        ]
+    },
+    {
+        "name": "ttygif",
+        "url": "https://github.com/icholy/ttygif",
+        "star": 3929,
+        "files": [
+            "ttygif"
+        ]
+    },
+    {
+        "name": "pocketsphinx",
+        "url": "https://github.com/cmusphinx/pocketsphinx",
+        "star": 3886,
+        "files": [
+            "libpocketsphinx.so",
+            "libgstpocketsphinx.so",
+            "pocketsphinx_pitch",
+            "pocketsphinx",
+            "pocketsphinx_lm_convert",
+            "pocketsphinx_jsgf2fsg",
+            "pocketsphinx_batch",
+            "pocketsphinx_mdef_convert",
+            "pocketsphinx_lm_eval"
+        ]
+    },
+
+    {
+        "name": "box64",
+        "url": "https://github.com/ptitSeb/box64",
+        "star": 3642,
+        "files": [
+            "box64"
+        ]
+    },
+    {
+        "name": "donut",
+        "url": "https://github.com/TheWover/donut",
+        "star": 3489,
+        "files": [
+            "libdonut.so",
+            "donut"
+        ]
+    },
+    {
+        "name": "redsocks",
+        "url": "https://github.com/darkk/redsocks",
+        "star": 3276,
+        "files": [
+            "redsocks"
+        ]
+    },
+    {
+        "name": "pwnat",
+        "url": "https://github.com/samyk/pwnat",
+        "star": 3272,
+        "files": [
+            "pwnat"
+        ]
+    },
+    {
+        "name": "fsearch",
+        "url": "https://github.com/cboxdoerfer/fsearch",
+        "star": 3252,
+        "files": [
+            "fsearch"
+        ]
+    },
+
+    {
+        "name": "odyssey",
+        "url": "https://github.com/yandex/odyssey",
+        "star": 3168,
+        "files": [
+            "odyssey"
+        ]
+    },
+    {
+        "name": "massdns",
+        "url": "https://github.com/blechschmidt/massdns",
+        "star": 3093,
+        "files": [
+            "massdns"
+        ]
+    },
+    {
+        "name": "uftrace",
+        "url": "https://github.com/namhyung/uftrace",
+        "star": 3000,
+        "files": [
+            "libmcount-nop.so",
+            "libmcount-fast.so",
+            "libmcount-fast-single.so",
+            "uftrace_python.so",
+            "libmcount-single.so",
+            "libmcount.so",
+            "uftrace"
+        ]
+    },
+    {
+        "name": "webdis",
+        "url": "https://github.com/nicolasff/webdis",
+        "star": 2833,
+        "files": [
+            "webdis"
+        ]
+    },
+
+    {
+        "name": "libtree",
+        "url": "https://github.com/haampie/libtree",
+        "star": 2570,
+        "files": [
+            "libtree"
+        ]
+    },
+    {
+        "name": "cglm",
+        "url": "https://github.com/recp/cglm",
+        "star": 2206,
+        "files": [
+            "libcglm.so"
+        ]
+    },
+    {
+        "name": "wiredtiger",
+        "url": "https://github.com/wiredtiger/wiredtiger",
+        "star": 2185,
+        "files": [
+            "libwiredtiger.so",
+            "wt"
+        ]
+    },
+    {
+        "name": "toybox",
+        "url": "https://github.com/landley/toybox",
+        "star": 2383,
+        "files": [
+            "toybox"
+        ]
+    },
+    {
+        "name": "uhubctl",
+        "url": "https://github.com/mvp/uhubctl",
+        "star": 2172,
+        "files": [
+            "uhubctl"
+        ]
+    },
+    {
+        "name": "coz",
+        "url": "https://github.com/plasma-umass/coz",
+        "star": 4037,
+        "files": [
+            "libcoz.so"
+        ]
+    },
+    {
+        "name": "lvgl",
+        "url": "https://github.com/lvgl/lvgl",
+        "star": 16043,
+        "files": [
+            "liblvgl.so",
+            "liblvgl.a"
+        ]
+    },
+    {
+        "name": "linenoise",
+        "url": "https://github.com/antirez/linenoise",
+        "star": 3740,
+        "files": [
+            "linenoise_example"
+        ]
+    },
+    {
+        "name": "tinyvm",
+        "url": "https://github.com/jakogut/tinyvm",
+        "star": 3176,
+        "files": [
+            "tvmi",
+            "tdb"
+        ]
+    },
+    {
+        "name": "libpcap",
+        "url": "https://github.com/the-tcpdump-group/libpcap",
+        "star": 2637,
+        "files": [
+            "libpcap.so",
+            "libpcap.a"
+        ]
+    },
+    {
+        "name": "open62541",
+        "url": "https://github.com/open62541/open62541",
+        "star": 2544,
+        "files": [
+            "libopen62541.so",
+            "libopen62541.a"
+        ]
+    },
+    {
+        "name": "ompi",
+        "url": "https://github.com/open-mpi/ompi",
+        "star": 2117,
+        "files": [
+            "libmpi.so"
+        ]
+    },
+    {
+        "name": "shc",
+        "url": "https://github.com/neurobin/shc",
+        "star": 1986,
+        "files": [
+            "shc"
+        ]
+    },
+    {
+        "name": "h2o",
+        "url": "https://github.com/h2o/h2o",
+        "star": 10824,
+        "files": [
+            "h2o"
+        ]
+    },
+    {
+        "name": "hstr",
+        "url": "https://github.com/dvorka/hstr",
+        "star": 4012,
+        "files": [
+            "hstr"
+        ]
+    },
+    {
+        "name": "suricata",
+        "url": "https://github.com/OISF/suricata",
+        "star": 4429,
+        "files": [
+            "suricata"
+        ]
+    },
+    {
+        "name": "snapraid",
+        "url": "https://github.com/amadvance/snapraid",
+        "star": 1955,
+        "files": [
+            "snapraid"
+        ]
+    },
+    {
+        "name": "sqlite",
+        "url": "https://github.com/sqlite/sqlite",
+        "files": [
+            "sqlite3"
+        ]
+    },
+    {
+        "name": "libgcrypt",
+        "url": "https://github.com/gpg/libgcrypt",
+        "files": [
+            "libgcrypt.so"
+        ]
+    },
+    {
+        "name": "ios-webkit-debug-proxy",
+        "url": "https://github.com/google/ios-webkit-debug-proxy",
+        "star": 5918,
+        "files": [
+            "libios_webkit_debug_proxy.so",
+            "ios_webkit_debug_proxy"
+        ]
+    },
+    {
+        "name": "util-linux",
+        "url": "https://github.com/util-linux/util-linux",
+        "star": 2617,
+        "files": [
+            "renice",
+            "hwclock",
+            "sulogin",
+            "blkpr",
+            "mcookie",
+            "hardlink",
+            "addpart",
+            "setarch",
+            "mkfs",
+            "exch",
+            "switch_root",
+            "agetty",
+            "ionice",
+            "pipesz",
+            "setpgid",
+            "scriptreplay",
+            "kill",
+            "cal",
+            "fsfreeze",
+            "chcpu",
+            "hexdump",
+            "col",
+            "readprofile",
+            "ipcmk",
+            "ipcrm",
+            "pivot_root",
+            "mkfs.bfs",
+            "coresched",
+            "unshare",
+            "waitpid",
+            "enosys",
+            "flock",
+            "delpart",
+            "colcrt",
+            "wall",
+            "ctrlaltdel",
+            "chmem",
+            "uclampset",
+            "utmpdump",
+            "last",
+            "fallocate",
+            "mkfs.minix",
+            "blkzone",
+            "nsenter",
+            "script",
+            "rev",
+            "fsck.minix",
+            "logger",
+            "nologin",
+            "mesg",
+            "taskset",
+            "isosize",
+            "look",
+            "rtcwake",
+            "fadvise",
+            "scriptlive",
+            "chrt",
+            "blockdev",
+            "setsid",
+            "colrm",
+            "namei",
+            "rename",
+            "ldattach",
+            "choom",
+            "getopt",
+            "whereis",
+            "resizepart",
+            "dmesg",
+            "ipcs"
+        ]
+    }
+]
