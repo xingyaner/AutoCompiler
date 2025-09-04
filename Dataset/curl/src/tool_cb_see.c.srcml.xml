@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/src/tool_cb_see.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+<cpp:include pos:start="24:1" pos:end="24:23">#<cpp:directive pos:start="24:2" pos:end="24:8">include</cpp:directive> <cpp:file pos:start="24:10" pos:end="24:23">"tool_setup.h"</cpp:file></cpp:include>
+
+<cpp:define pos:start="26:1" pos:end="26:27">#<cpp:directive pos:start="26:2" pos:end="26:7">define</cpp:directive> <cpp:macro pos:start="26:9" pos:end="26:27"><name pos:start="26:9" pos:end="26:27">ENABLE_CURLX_PRINTF</name></cpp:macro></cpp:define>
+<comment type="block" pos:start="27:1" pos:end="27:36">/* use our own printf() functions */</comment>
+<cpp:include pos:start="28:1" pos:end="28:18">#<cpp:directive pos:start="28:2" pos:end="28:8">include</cpp:directive> <cpp:file pos:start="28:10" pos:end="28:18">"curlx.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="30:1" pos:end="30:25">#<cpp:directive pos:start="30:2" pos:end="30:8">include</cpp:directive> <cpp:file pos:start="30:10" pos:end="30:25">"tool_cfgable.h"</cpp:file></cpp:include>
+<cpp:include pos:start="31:1" pos:end="31:25">#<cpp:directive pos:start="31:2" pos:end="31:8">include</cpp:directive> <cpp:file pos:start="31:10" pos:end="31:25">"tool_operate.h"</cpp:file></cpp:include>
+<cpp:include pos:start="32:1" pos:end="32:24">#<cpp:directive pos:start="32:2" pos:end="32:8">include</cpp:directive> <cpp:file pos:start="32:10" pos:end="32:24">"tool_cb_see.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="34:1" pos:end="34:21">#<cpp:directive pos:start="34:2" pos:end="34:8">include</cpp:directive> <cpp:file pos:start="34:10" pos:end="34:21">"memdebug.h"</cpp:file></cpp:include> <comment type="block" pos:start="34:23" pos:end="34:53">/* keep this as LAST include */</comment>
+
+<comment type="block" pos:start="36:1" pos:end="38:37">/* OUR_MAX_SEEK_L has 'long' data type, OUR_MAX_SEEK_O has 'curl_off_t,
+   both represent the same value. Maximum offset used here when we lseek
+   using a 'long' data type offset */</comment>
+
+<cpp:define pos:start="40:1" pos:end="40:40">#<cpp:directive pos:start="40:2" pos:end="40:7">define</cpp:directive> <cpp:macro pos:start="40:9" pos:end="40:22"><name pos:start="40:9" pos:end="40:22">OUR_MAX_SEEK_L</name></cpp:macro>  <cpp:value pos:start="40:25" pos:end="40:40">2147483647L - 1L</cpp:value></cpp:define>
+<cpp:define pos:start="41:1" pos:end="41:68">#<cpp:directive pos:start="41:2" pos:end="41:7">define</cpp:directive> <cpp:macro pos:start="41:9" pos:end="41:22"><name pos:start="41:9" pos:end="41:22">OUR_MAX_SEEK_O</name></cpp:macro>  <cpp:value pos:start="41:25" pos:end="41:68">CURL_OFF_T_C(0x7FFFFFFF) - CURL_OFF_T_C(0x1)</cpp:value></cpp:define>
+
+<comment type="block" pos:start="43:1" pos:end="48:2">/*
+** callback for CURLOPT_SEEKFUNCTION
+**
+** Notice that this is not supposed to return the resulting offset. This
+** shall only return CURL_SEEKFUNC_* return codes.
+*/</comment>
+
+<function pos:start="50:1" pos:end="103:0"><type pos:start="50:1" pos:end="50:3"><name pos:start="50:1" pos:end="50:3">int</name></type> <name pos:start="50:5" pos:end="50:16">tool_seek_cb</name><parameter_list pos:start="50:17" pos:end="50:63">(<parameter pos:start="50:18" pos:end="50:31"><decl pos:start="50:18" pos:end="50:31"><type pos:start="50:18" pos:end="50:31"><name pos:start="50:18" pos:end="50:21">void</name> <modifier pos:start="50:23" pos:end="50:23">*</modifier></type><name pos:start="50:24" pos:end="50:31">userdata</name></decl></parameter>, <parameter pos:start="50:34" pos:end="50:50"><decl pos:start="50:34" pos:end="50:50"><type pos:start="50:34" pos:end="50:50"><name pos:start="50:34" pos:end="50:43">curl_off_t</name></type> <name pos:start="50:45" pos:end="50:50">offset</name></decl></parameter>, <parameter pos:start="50:53" pos:end="50:62"><decl pos:start="50:53" pos:end="50:62"><type pos:start="50:53" pos:end="50:62"><name pos:start="50:53" pos:end="50:55">int</name></type> <name pos:start="50:57" pos:end="50:62">whence</name></decl></parameter>)</parameter_list>
+<block pos:start="51:1" pos:end="103:0">{<block_content pos:start="52:3" pos:end="91:26">
+  <decl_stmt pos:start="52:3" pos:end="55:0"><decl pos:start="52:3" pos:end="52:37"><type pos:start="52:3" pos:end="52:23"><name pos:start="52:3" pos:end="52:21"><name pos:start="52:3" pos:end="52:8">struct</name> <name pos:start="52:10" pos:end="52:21">per_transfer</name></name> <modifier pos:start="52:23" pos:end="52:23">*</modifier></type><name pos:start="52:24" pos:end="52:26">per</name> <init pos:start="52:28" pos:end="52:37">= <expr pos:start="52:30" pos:end="52:37"><name pos:start="52:30" pos:end="52:37">userdata</name></expr></init></decl>;</decl_stmt>
+
+<cpp:if pos:start="54:1" pos:end="54:72">#<cpp:directive pos:start="54:2" pos:end="54:3">if</cpp:directive><expr pos:start="54:4" pos:end="54:72"><operator pos:start="54:4" pos:end="54:4">(</operator><name pos:start="54:5" pos:end="54:21">SIZEOF_CURL_OFF_T</name> <operator pos:start="54:23" pos:end="54:23">&gt;</operator> <name pos:start="54:25" pos:end="54:36">SIZEOF_OFF_T</name><operator pos:start="54:37" pos:end="54:37">)</operator> <operator pos:start="54:39" pos:end="54:40">&amp;&amp;</operator> <operator pos:start="54:42" pos:end="54:42">!</operator><call pos:start="54:43" pos:end="54:72"><name pos:start="54:43" pos:end="54:49">defined</name><argument_list pos:start="54:50" pos:end="54:72">(<argument pos:start="54:51" pos:end="54:71"><expr pos:start="54:51" pos:end="54:71"><name pos:start="54:51" pos:end="54:71">USE_WIN32_LARGE_FILES</name></expr></argument>)</argument_list></call></expr></cpp:if>
+
+  <comment type="block" pos:start="56:3" pos:end="58:67">/* The offset check following here is only interesting if curl_off_t is
+     larger than off_t and we are not using the WIN32 large file support
+     macros that provide the support to do 64bit seeks correctly */</comment>
+
+  <if_stmt pos:start="60:3" pos:end="84:0"><if pos:start="60:3" pos:end="84:0">if<condition pos:start="60:5" pos:end="60:29">(<expr pos:start="60:6" pos:end="60:28"><name pos:start="60:6" pos:end="60:11">offset</name> <operator pos:start="60:13" pos:end="60:13">&gt;</operator> <name pos:start="60:15" pos:end="60:28">OUR_MAX_SEEK_O</name></expr>)</condition> <block pos:start="60:31" pos:end="84:0">{<block_content pos:start="64:5" pos:end="81:28">
+    <comment type="block" pos:start="61:5" pos:end="63:44">/* Some precaution code to work around problems with different data sizes
+       to allow seeking &gt;32bit even if off_t is 32bit. Should be very rare and
+       is really valid on weirdo-systems. */</comment>
+    <decl_stmt pos:start="64:5" pos:end="64:29"><decl pos:start="64:5" pos:end="64:28"><type pos:start="64:5" pos:end="64:14"><name pos:start="64:5" pos:end="64:14">curl_off_t</name></type> <name pos:start="64:16" pos:end="64:19">left</name> <init pos:start="64:21" pos:end="64:28">= <expr pos:start="64:23" pos:end="64:28"><name pos:start="64:23" pos:end="64:28">offset</name></expr></init></decl>;</decl_stmt>
+
+    <if_stmt pos:start="66:5" pos:end="68:32"><if pos:start="66:5" pos:end="68:32">if<condition pos:start="66:7" pos:end="66:26">(<expr pos:start="66:8" pos:end="66:25"><name pos:start="66:8" pos:end="66:13">whence</name> <operator pos:start="66:15" pos:end="66:16">!=</operator> <name pos:start="66:18" pos:end="66:25">SEEK_SET</name></expr>)</condition><block type="pseudo" pos:start="68:7" pos:end="68:32"><block_content pos:start="68:7" pos:end="68:32">
+      <comment type="block" pos:start="67:7" pos:end="67:54">/* this code path doesn't support other types */</comment>
+      <return pos:start="68:7" pos:end="68:32">return <expr pos:start="68:14" pos:end="68:31"><name pos:start="68:14" pos:end="68:31">CURL_SEEKFUNC_FAIL</name></expr>;</return></block_content></block></if></if_stmt>
+
+    <if_stmt pos:start="70:5" pos:end="72:32"><if pos:start="70:5" pos:end="72:32">if<condition pos:start="70:7" pos:end="70:52">(<expr pos:start="70:8" pos:end="70:51"><name pos:start="70:8" pos:end="70:18">LSEEK_ERROR</name> <operator pos:start="70:20" pos:end="70:21">==</operator> <call pos:start="70:23" pos:end="70:51"><name pos:start="70:23" pos:end="70:27">lseek</name><argument_list pos:start="70:28" pos:end="70:51">(<argument pos:start="70:29" pos:end="70:37"><expr pos:start="70:29" pos:end="70:37"><name pos:start="70:29" pos:end="70:37"><name pos:start="70:29" pos:end="70:31">per</name><operator pos:start="70:32" pos:end="70:33">-&gt;</operator><name pos:start="70:34" pos:end="70:37">infd</name></name></expr></argument>, <argument pos:start="70:40" pos:end="70:40"><expr pos:start="70:40" pos:end="70:40"><literal type="number" pos:start="70:40" pos:end="70:40">0</literal></expr></argument>, <argument pos:start="70:43" pos:end="70:50"><expr pos:start="70:43" pos:end="70:50"><name pos:start="70:43" pos:end="70:50">SEEK_SET</name></expr></argument>)</argument_list></call></expr>)</condition><block type="pseudo" pos:start="72:7" pos:end="72:32"><block_content pos:start="72:7" pos:end="72:32">
+      <comment type="block" pos:start="71:7" pos:end="71:40">/* couldn't rewind to beginning */</comment>
+      <return pos:start="72:7" pos:end="72:32">return <expr pos:start="72:14" pos:end="72:31"><name pos:start="72:14" pos:end="72:31">CURL_SEEKFUNC_FAIL</name></expr>;</return></block_content></block></if></if_stmt>
+
+    <while pos:start="74:5" pos:end="80:5">while<condition pos:start="74:10" pos:end="74:15">(<expr pos:start="74:11" pos:end="74:14"><name pos:start="74:11" pos:end="74:14">left</name></expr>)</condition> <block pos:start="74:17" pos:end="80:5">{<block_content pos:start="75:7" pos:end="79:19">
+      <decl_stmt pos:start="75:7" pos:end="75:72"><decl pos:start="75:7" pos:end="75:71"><type pos:start="75:7" pos:end="75:10"><name pos:start="75:7" pos:end="75:10">long</name></type> <name pos:start="75:12" pos:end="75:15">step</name> <init pos:start="75:17" pos:end="75:71">= <expr pos:start="75:19" pos:end="75:71"><ternary pos:start="75:19" pos:end="75:71"><condition pos:start="75:19" pos:end="75:43"><expr pos:start="75:19" pos:end="75:41"><operator pos:start="75:19" pos:end="75:19">(</operator><name pos:start="75:20" pos:end="75:23">left</name> <operator pos:start="75:25" pos:end="75:25">&gt;</operator> <name pos:start="75:27" pos:end="75:40">OUR_MAX_SEEK_O</name><operator pos:start="75:41" pos:end="75:41">)</operator></expr> ?</condition><then pos:start="75:45" pos:end="75:58"> <expr pos:start="75:45" pos:end="75:58"><name pos:start="75:45" pos:end="75:58">OUR_MAX_SEEK_L</name></expr> </then><else pos:start="75:60" pos:end="75:71">: <expr pos:start="75:62" pos:end="75:71"><operator pos:start="75:62" pos:end="75:62">(</operator><name pos:start="75:63" pos:end="75:66">long</name><operator pos:start="75:67" pos:end="75:67">)</operator><name pos:start="75:68" pos:end="75:71">left</name></expr></else></ternary></expr></init></decl>;</decl_stmt>
+      <if_stmt pos:start="76:7" pos:end="78:34"><if pos:start="76:7" pos:end="78:34">if<condition pos:start="76:9" pos:end="76:57">(<expr pos:start="76:10" pos:end="76:56"><name pos:start="76:10" pos:end="76:20">LSEEK_ERROR</name> <operator pos:start="76:22" pos:end="76:23">==</operator> <call pos:start="76:25" pos:end="76:56"><name pos:start="76:25" pos:end="76:29">lseek</name><argument_list pos:start="76:30" pos:end="76:56">(<argument pos:start="76:31" pos:end="76:39"><expr pos:start="76:31" pos:end="76:39"><name pos:start="76:31" pos:end="76:39"><name pos:start="76:31" pos:end="76:33">per</name><operator pos:start="76:34" pos:end="76:35">-&gt;</operator><name pos:start="76:36" pos:end="76:39">infd</name></name></expr></argument>, <argument pos:start="76:42" pos:end="76:45"><expr pos:start="76:42" pos:end="76:45"><name pos:start="76:42" pos:end="76:45">step</name></expr></argument>, <argument pos:start="76:48" pos:end="76:55"><expr pos:start="76:48" pos:end="76:55"><name pos:start="76:48" pos:end="76:55">SEEK_CUR</name></expr></argument>)</argument_list></call></expr>)</condition><block type="pseudo" pos:start="78:9" pos:end="78:34"><block_content pos:start="78:9" pos:end="78:34">
+        <comment type="block" pos:start="77:9" pos:end="77:55">/* couldn't seek forwards the desired amount */</comment>
+        <return pos:start="78:9" pos:end="78:34">return <expr pos:start="78:16" pos:end="78:33"><name pos:start="78:16" pos:end="78:33">CURL_SEEKFUNC_FAIL</name></expr>;</return></block_content></block></if></if_stmt>
+      <expr_stmt pos:start="79:7" pos:end="79:19"><expr pos:start="79:7" pos:end="79:18"><name pos:start="79:7" pos:end="79:10">left</name> <operator pos:start="79:12" pos:end="79:13">-=</operator> <name pos:start="79:15" pos:end="79:18">step</name></expr>;</expr_stmt>
+    </block_content>}</block></while>
+    <return pos:start="81:5" pos:end="81:28">return <expr pos:start="81:12" pos:end="81:27"><name pos:start="81:12" pos:end="81:27">CURL_SEEKFUNC_OK</name></expr>;</return>
+  </block_content>}</block></if></if_stmt>
+<cpp:endif pos:start="83:1" pos:end="83:6">#<cpp:directive pos:start="83:2" pos:end="83:6">endif</cpp:directive></cpp:endif>
+
+  <if_stmt pos:start="85:3" pos:end="89:34"><if pos:start="85:3" pos:end="89:34">if<condition pos:start="85:5" pos:end="85:53">(<expr pos:start="85:6" pos:end="85:52"><name pos:start="85:6" pos:end="85:16">LSEEK_ERROR</name> <operator pos:start="85:18" pos:end="85:19">==</operator> <call pos:start="85:21" pos:end="85:52"><name pos:start="85:21" pos:end="85:25">lseek</name><argument_list pos:start="85:26" pos:end="85:52">(<argument pos:start="85:27" pos:end="85:35"><expr pos:start="85:27" pos:end="85:35"><name pos:start="85:27" pos:end="85:35"><name pos:start="85:27" pos:end="85:29">per</name><operator pos:start="85:30" pos:end="85:31">-&gt;</operator><name pos:start="85:32" pos:end="85:35">infd</name></name></expr></argument>, <argument pos:start="85:38" pos:end="85:43"><expr pos:start="85:38" pos:end="85:43"><name pos:start="85:38" pos:end="85:43">offset</name></expr></argument>, <argument pos:start="85:46" pos:end="85:51"><expr pos:start="85:46" pos:end="85:51"><name pos:start="85:46" pos:end="85:51">whence</name></expr></argument>)</argument_list></call></expr>)</condition><block type="pseudo" pos:start="89:5" pos:end="89:34"><block_content pos:start="89:5" pos:end="89:34">
+    <comment type="block" pos:start="86:5" pos:end="88:66">/* couldn't rewind, the reason is in errno but errno is just not portable
+       enough and we don't actually care that much why we failed. We'll let
+       libcurl know that it may try other means if it wants to. */</comment>
+    <return pos:start="89:5" pos:end="89:34">return <expr pos:start="89:12" pos:end="89:33"><name pos:start="89:12" pos:end="89:33">CURL_SEEKFUNC_CANTSEEK</name></expr>;</return></block_content></block></if></if_stmt>
+
+  <return pos:start="91:3" pos:end="91:26">return <expr pos:start="91:10" pos:end="91:25"><name pos:start="91:10" pos:end="91:25">CURL_SEEKFUNC_OK</name></expr>;</return>
+</block_content>}</block></function>
+
+<cpp:ifdef pos:start="94:1" pos:end="94:25">#<cpp:directive pos:start="94:2" pos:end="94:6">ifdef</cpp:directive> <name pos:start="94:8" pos:end="94:25">USE_TOOL_FTRUNCATE</name></cpp:ifdef>
+
+<cpp:ifdef pos:start="96:1" pos:end="96:17">#<cpp:directive pos:start="96:2" pos:end="96:6">ifdef</cpp:directive> <name pos:start="96:8" pos:end="96:17">_WIN32_WCE</name></cpp:ifdef>
+<comment type="block" pos:start="97:1" pos:end="97:44">/* 64-bit lseek-like function unavailable */</comment>
+<cpp:undef pos:start="98:1" pos:end="98:18">#  <cpp:directive pos:start="98:4" pos:end="98:8">undef</cpp:directive> <name pos:start="98:10" pos:end="98:18">_lseeki64</name></cpp:undef>
+<cpp:define pos:start="99:1" pos:end="99:57">#  <cpp:directive pos:start="99:4" pos:end="99:9">define</cpp:directive> <cpp:macro pos:start="99:11" pos:end="99:35"><name pos:start="99:11" pos:end="99:19">_lseeki64</name><parameter_list pos:start="99:20" pos:end="99:35">(<parameter pos:start="99:21" pos:end="99:23"><type pos:start="99:21" pos:end="99:23"><name pos:start="99:21" pos:end="99:23">hnd</name></type></parameter>,<parameter pos:start="99:25" pos:end="99:27"><type pos:start="99:25" pos:end="99:27"><name pos:start="99:25" pos:end="99:27">ofs</name></type></parameter>,<parameter pos:start="99:29" pos:end="99:34"><type pos:start="99:29" pos:end="99:34"><name pos:start="99:29" pos:end="99:34">whence</name></type></parameter>)</parameter_list></cpp:macro> <cpp:value pos:start="99:37" pos:end="99:57">lseek(hnd,ofs,whence)</cpp:value></cpp:define>
+<cpp:undef pos:start="100:1" pos:end="100:23">#  <cpp:directive pos:start="100:4" pos:end="100:8">undef</cpp:directive> <name pos:start="100:10" pos:end="100:23">_get_osfhandle</name></cpp:undef>
+<cpp:define pos:start="101:1" pos:end="101:33">#  <cpp:directive pos:start="101:4" pos:end="101:9">define</cpp:directive> <cpp:macro pos:start="101:11" pos:end="101:28"><name pos:start="101:11" pos:end="101:24">_get_osfhandle</name><parameter_list pos:start="101:25" pos:end="101:28">(<parameter pos:start="101:26" pos:end="101:27"><type pos:start="101:26" pos:end="101:27"><name pos:start="101:26" pos:end="101:27">fd</name></type></parameter>)</parameter_list></cpp:macro> <cpp:value pos:start="101:30" pos:end="101:33">(fd)</cpp:value></cpp:define>
+<cpp:endif pos:start="102:1" pos:end="102:6">#<cpp:directive pos:start="102:2" pos:end="102:6">endif</cpp:directive></cpp:endif>
+
+<comment type="block" pos:start="104:1" pos:end="106:3">/*
+ * Truncate a file handle at a 64-bit position 'where'.
+ */</comment>
+
+<function pos:start="108:1" pos:end="122:0"><type pos:start="108:1" pos:end="108:3"><name pos:start="108:1" pos:end="108:3">int</name></type> <name pos:start="108:5" pos:end="108:20">tool_ftruncate64</name><parameter_list pos:start="108:21" pos:end="108:46">(<parameter pos:start="108:22" pos:end="108:27"><decl pos:start="108:22" pos:end="108:27"><type pos:start="108:22" pos:end="108:27"><name pos:start="108:22" pos:end="108:24">int</name></type> <name pos:start="108:26" pos:end="108:27">fd</name></decl></parameter>, <parameter pos:start="108:30" pos:end="108:45"><decl pos:start="108:30" pos:end="108:45"><type pos:start="108:30" pos:end="108:45"><name pos:start="108:30" pos:end="108:39">curl_off_t</name></type> <name pos:start="108:41" pos:end="108:45">where</name></decl></parameter>)</parameter_list>
+<block pos:start="109:1" pos:end="122:0">{<block_content pos:start="110:3" pos:end="118:11">
+  <decl_stmt pos:start="110:3" pos:end="110:39"><decl pos:start="110:3" pos:end="110:38"><type pos:start="110:3" pos:end="110:10"><name pos:start="110:3" pos:end="110:10">intptr_t</name></type> <name pos:start="110:12" pos:end="110:17">handle</name> <init pos:start="110:19" pos:end="110:38">= <expr pos:start="110:21" pos:end="110:38"><call pos:start="110:21" pos:end="110:38"><name pos:start="110:21" pos:end="110:34">_get_osfhandle</name><argument_list pos:start="110:35" pos:end="110:38">(<argument pos:start="110:36" pos:end="110:37"><expr pos:start="110:36" pos:end="110:37"><name pos:start="110:36" pos:end="110:37">fd</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+
+  <if_stmt pos:start="112:3" pos:end="113:14"><if pos:start="112:3" pos:end="113:14">if<condition pos:start="112:5" pos:end="112:40">(<expr pos:start="112:6" pos:end="112:39"><call pos:start="112:6" pos:end="112:35"><name pos:start="112:6" pos:end="112:14">_lseeki64</name><argument_list pos:start="112:15" pos:end="112:35">(<argument pos:start="112:16" pos:end="112:17"><expr pos:start="112:16" pos:end="112:17"><name pos:start="112:16" pos:end="112:17">fd</name></expr></argument>, <argument pos:start="112:20" pos:end="112:24"><expr pos:start="112:20" pos:end="112:24"><name pos:start="112:20" pos:end="112:24">where</name></expr></argument>, <argument pos:start="112:27" pos:end="112:34"><expr pos:start="112:27" pos:end="112:34"><name pos:start="112:27" pos:end="112:34">SEEK_SET</name></expr></argument>)</argument_list></call> <operator pos:start="112:37" pos:end="112:37">&lt;</operator> <literal type="number" pos:start="112:39" pos:end="112:39">0</literal></expr>)</condition><block type="pseudo" pos:start="113:5" pos:end="113:14"><block_content pos:start="113:5" pos:end="113:14">
+    <return pos:start="113:5" pos:end="113:14">return <expr pos:start="113:12" pos:end="113:13"><operator pos:start="113:12" pos:end="113:12">-</operator><literal type="number" pos:start="113:13" pos:end="113:13">1</literal></expr>;</return></block_content></block></if></if_stmt>
+
+  <if_stmt pos:start="115:3" pos:end="116:14"><if pos:start="115:3" pos:end="116:14">if<condition pos:start="115:5" pos:end="115:35">(<expr pos:start="115:6" pos:end="115:34"><operator pos:start="115:6" pos:end="115:6">!</operator><call pos:start="115:7" pos:end="115:34"><name pos:start="115:7" pos:end="115:18">SetEndOfFile</name><argument_list pos:start="115:19" pos:end="115:34">(<argument pos:start="115:20" pos:end="115:33"><expr pos:start="115:20" pos:end="115:33"><operator pos:start="115:20" pos:end="115:20">(</operator><name pos:start="115:21" pos:end="115:26">HANDLE</name><operator pos:start="115:27" pos:end="115:27">)</operator><name pos:start="115:28" pos:end="115:33">handle</name></expr></argument>)</argument_list></call></expr>)</condition><block type="pseudo" pos:start="116:5" pos:end="116:14"><block_content pos:start="116:5" pos:end="116:14">
+    <return pos:start="116:5" pos:end="116:14">return <expr pos:start="116:12" pos:end="116:13"><operator pos:start="116:12" pos:end="116:12">-</operator><literal type="number" pos:start="116:13" pos:end="116:13">1</literal></expr>;</return></block_content></block></if></if_stmt>
+
+  <return pos:start="118:3" pos:end="118:11">return <expr pos:start="118:10" pos:end="118:10"><literal type="number" pos:start="118:10" pos:end="118:10">0</literal></expr>;</return>
+</block_content>}</block></function>
+
+<cpp:endif pos:start="121:1" pos:end="121:6">#<cpp:directive pos:start="121:2" pos:end="121:6">endif</cpp:directive></cpp:endif> <comment type="block" pos:start="121:8" pos:end="121:31">/* USE_TOOL_FTRUNCATE */</comment>
+</unit>

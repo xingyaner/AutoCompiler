@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/lib/fileinfo.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+
+<cpp:include pos:start="25:1" pos:end="25:23">#<cpp:directive pos:start="25:2" pos:end="25:8">include</cpp:directive> <cpp:file pos:start="25:10" pos:end="25:23">"curl_setup.h"</cpp:file></cpp:include>
+<cpp:ifndef pos:start="26:1" pos:end="26:24">#<cpp:directive pos:start="26:2" pos:end="26:7">ifndef</cpp:directive> <name pos:start="26:9" pos:end="26:24">CURL_DISABLE_FTP</name></cpp:ifndef>
+<cpp:include pos:start="27:1" pos:end="27:19">#<cpp:directive pos:start="27:2" pos:end="27:8">include</cpp:directive> <cpp:file pos:start="27:10" pos:end="27:19">"strdup.h"</cpp:file></cpp:include>
+<cpp:include pos:start="28:1" pos:end="28:21">#<cpp:directive pos:start="28:2" pos:end="28:8">include</cpp:directive> <cpp:file pos:start="28:10" pos:end="28:21">"fileinfo.h"</cpp:file></cpp:include>
+<cpp:include pos:start="29:1" pos:end="29:24">#<cpp:directive pos:start="29:2" pos:end="29:8">include</cpp:directive> <cpp:file pos:start="29:10" pos:end="29:24">"curl_memory.h"</cpp:file></cpp:include>
+<comment type="block" pos:start="30:1" pos:end="30:39">/* The last #include file should be: */</comment>
+<cpp:include pos:start="31:1" pos:end="31:21">#<cpp:directive pos:start="31:2" pos:end="31:8">include</cpp:directive> <cpp:file pos:start="31:10" pos:end="31:21">"memdebug.h"</cpp:file></cpp:include>
+
+<function pos:start="33:1" pos:end="36:1"><type pos:start="33:1" pos:end="33:17"><name pos:start="33:1" pos:end="33:15"><name pos:start="33:1" pos:end="33:6">struct</name> <name pos:start="33:8" pos:end="33:15">fileinfo</name></name> <modifier pos:start="33:17" pos:end="33:17">*</modifier></type><name pos:start="33:18" pos:end="33:36">Curl_fileinfo_alloc</name><parameter_list pos:start="33:37" pos:end="33:42">(<parameter pos:start="33:38" pos:end="33:41"><decl pos:start="33:38" pos:end="33:41"><type pos:start="33:38" pos:end="33:41"><name pos:start="33:38" pos:end="33:41">void</name></type></decl></parameter>)</parameter_list>
+<block pos:start="34:1" pos:end="36:1">{<block_content pos:start="35:3" pos:end="35:44">
+  <return pos:start="35:3" pos:end="35:44">return <expr pos:start="35:10" pos:end="35:43"><call pos:start="35:10" pos:end="35:43"><name pos:start="35:10" pos:end="35:15">calloc</name><argument_list pos:start="35:16" pos:end="35:43">(<argument pos:start="35:17" pos:end="35:17"><expr pos:start="35:17" pos:end="35:17"><literal type="number" pos:start="35:17" pos:end="35:17">1</literal></expr></argument>, <argument pos:start="35:20" pos:end="35:42"><expr pos:start="35:20" pos:end="35:42"><sizeof pos:start="35:20" pos:end="35:42">sizeof<argument_list pos:start="35:26" pos:end="35:42">(<argument pos:start="35:27" pos:end="35:41"><expr pos:start="35:27" pos:end="35:41">struct <name pos:start="35:34" pos:end="35:41">fileinfo</name></expr></argument>)</argument_list></sizeof></expr></argument>)</argument_list></call></expr>;</return>
+</block_content>}</block></function>
+
+<function pos:start="38:1" pos:end="47:0"><type pos:start="38:1" pos:end="38:4"><name pos:start="38:1" pos:end="38:4">void</name></type> <name pos:start="38:6" pos:end="38:26">Curl_fileinfo_cleanup</name><parameter_list pos:start="38:27" pos:end="38:50">(<parameter pos:start="38:28" pos:end="38:49"><decl pos:start="38:28" pos:end="38:49"><type pos:start="38:28" pos:end="38:49"><name pos:start="38:28" pos:end="38:42"><name pos:start="38:28" pos:end="38:33">struct</name> <name pos:start="38:35" pos:end="38:42">fileinfo</name></name> <modifier pos:start="38:44" pos:end="38:44">*</modifier></type><name pos:start="38:45" pos:end="38:49">finfo</name></decl></parameter>)</parameter_list>
+<block pos:start="39:1" pos:end="47:0">{<block_content pos:start="40:3" pos:end="44:14">
+  <if_stmt pos:start="40:3" pos:end="41:11"><if pos:start="40:3" pos:end="41:11">if<condition pos:start="40:5" pos:end="40:12">(<expr pos:start="40:6" pos:end="40:11"><operator pos:start="40:6" pos:end="40:6">!</operator><name pos:start="40:7" pos:end="40:11">finfo</name></expr>)</condition><block type="pseudo" pos:start="41:5" pos:end="41:11"><block_content pos:start="41:5" pos:end="41:11">
+    <return pos:start="41:5" pos:end="41:11">return;</return></block_content></block></if></if_stmt>
+
+  <expr_stmt pos:start="43:3" pos:end="43:29"><expr pos:start="43:3" pos:end="43:28"><call pos:start="43:3" pos:end="43:28"><name pos:start="43:3" pos:end="43:15">Curl_dyn_free</name><argument_list pos:start="43:16" pos:end="43:28">(<argument pos:start="43:17" pos:end="43:27"><expr pos:start="43:17" pos:end="43:27"><operator pos:start="43:17" pos:end="43:17">&amp;</operator><name pos:start="43:18" pos:end="43:27"><name pos:start="43:18" pos:end="43:22">finfo</name><operator pos:start="43:23" pos:end="43:24">-&gt;</operator><name pos:start="43:25" pos:end="43:27">buf</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  <expr_stmt pos:start="44:3" pos:end="44:14"><expr pos:start="44:3" pos:end="44:13"><call pos:start="44:3" pos:end="44:13"><name pos:start="44:3" pos:end="44:6">free</name><argument_list pos:start="44:7" pos:end="44:13">(<argument pos:start="44:8" pos:end="44:12"><expr pos:start="44:8" pos:end="44:12"><name pos:start="44:8" pos:end="44:12">finfo</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+</block_content>}</block></function>
+<cpp:endif pos:start="46:1" pos:end="46:6">#<cpp:directive pos:start="46:2" pos:end="46:6">endif</cpp:directive></cpp:endif>
+</unit>

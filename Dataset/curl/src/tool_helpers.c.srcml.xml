@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/src/tool_helpers.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+<cpp:include pos:start="24:1" pos:end="24:23">#<cpp:directive pos:start="24:2" pos:end="24:8">include</cpp:directive> <cpp:file pos:start="24:10" pos:end="24:23">"tool_setup.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="26:1" pos:end="26:20">#<cpp:directive pos:start="26:2" pos:end="26:8">include</cpp:directive> <cpp:file pos:start="26:10" pos:end="26:20">"strcase.h"</cpp:file></cpp:include>
+
+<cpp:define pos:start="28:1" pos:end="28:27">#<cpp:directive pos:start="28:2" pos:end="28:7">define</cpp:directive> <cpp:macro pos:start="28:9" pos:end="28:27"><name pos:start="28:9" pos:end="28:27">ENABLE_CURLX_PRINTF</name></cpp:macro></cpp:define>
+<comment type="block" pos:start="29:1" pos:end="29:36">/* use our own printf() functions */</comment>
+<cpp:include pos:start="30:1" pos:end="30:18">#<cpp:directive pos:start="30:2" pos:end="30:8">include</cpp:directive> <cpp:file pos:start="30:10" pos:end="30:18">"curlx.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="32:1" pos:end="32:25">#<cpp:directive pos:start="32:2" pos:end="32:8">include</cpp:directive> <cpp:file pos:start="32:10" pos:end="32:25">"tool_cfgable.h"</cpp:file></cpp:include>
+<cpp:include pos:start="33:1" pos:end="33:22">#<cpp:directive pos:start="33:2" pos:end="33:8">include</cpp:directive> <cpp:file pos:start="33:10" pos:end="33:22">"tool_msgs.h"</cpp:file></cpp:include>
+<cpp:include pos:start="34:1" pos:end="34:26">#<cpp:directive pos:start="34:2" pos:end="34:8">include</cpp:directive> <cpp:file pos:start="34:10" pos:end="34:26">"tool_getparam.h"</cpp:file></cpp:include>
+<cpp:include pos:start="35:1" pos:end="35:25">#<cpp:directive pos:start="35:2" pos:end="35:8">include</cpp:directive> <cpp:file pos:start="35:10" pos:end="35:25">"tool_helpers.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="37:1" pos:end="37:21">#<cpp:directive pos:start="37:2" pos:end="37:8">include</cpp:directive> <cpp:file pos:start="37:10" pos:end="37:21">"memdebug.h"</cpp:file></cpp:include> <comment type="block" pos:start="37:23" pos:end="37:53">/* keep this as LAST include */</comment>
+
+<comment type="block" pos:start="39:1" pos:end="41:2">/*
+** Helper functions that are used from more than one source file.
+*/</comment>
+
+<function pos:start="43:1" pos:end="86:1"><type pos:start="43:1" pos:end="43:12"><specifier pos:start="43:1" pos:end="43:5">const</specifier> <name pos:start="43:7" pos:end="43:10">char</name> <modifier pos:start="43:12" pos:end="43:12">*</modifier></type><name pos:start="43:13" pos:end="43:22">param2text</name><parameter_list pos:start="43:23" pos:end="43:31">(<parameter pos:start="43:24" pos:end="43:30"><decl pos:start="43:24" pos:end="43:30"><type pos:start="43:24" pos:end="43:26"><name pos:start="43:24" pos:end="43:26">int</name></type> <name pos:start="43:28" pos:end="43:30">res</name></decl></parameter>)</parameter_list>
+<block pos:start="44:1" pos:end="86:1">{<block_content pos:start="45:3" pos:end="85:3">
+  <decl_stmt pos:start="45:3" pos:end="45:45"><decl pos:start="45:3" pos:end="45:44"><type pos:start="45:3" pos:end="45:16"><name pos:start="45:3" pos:end="45:16">ParameterError</name></type> <name pos:start="45:18" pos:end="45:22">error</name> <init pos:start="45:24" pos:end="45:44">= <expr pos:start="45:26" pos:end="45:44"><operator pos:start="45:26" pos:end="45:26">(</operator><name pos:start="45:27" pos:end="45:40">ParameterError</name><operator pos:start="45:41" pos:end="45:41">)</operator><name pos:start="45:42" pos:end="45:44">res</name></expr></init></decl>;</decl_stmt>
+  <switch pos:start="46:3" pos:end="85:3">switch<condition pos:start="46:9" pos:end="46:15">(<expr pos:start="46:10" pos:end="46:14"><name pos:start="46:10" pos:end="46:14">error</name></expr>)</condition> <block pos:start="46:17" pos:end="85:3">{<block_content pos:start="47:3" pos:end="84:27">
+  <case pos:start="47:3" pos:end="47:33">case <expr pos:start="47:8" pos:end="47:32"><name pos:start="47:8" pos:end="47:32">PARAM_GOT_EXTRA_PARAMETER</name></expr>:</case>
+    <return pos:start="48:5" pos:end="48:46">return <expr pos:start="48:12" pos:end="48:45"><literal type="string" pos:start="48:12" pos:end="48:45">"had unsupported trailing garbage"</literal></expr>;</return>
+  <case pos:start="49:3" pos:end="49:28">case <expr pos:start="49:8" pos:end="49:27"><name pos:start="49:8" pos:end="49:27">PARAM_OPTION_UNKNOWN</name></expr>:</case>
+    <return pos:start="50:5" pos:end="50:24">return <expr pos:start="50:12" pos:end="50:23"><literal type="string" pos:start="50:12" pos:end="50:23">"is unknown"</literal></expr>;</return>
+  <case pos:start="51:3" pos:end="51:30">case <expr pos:start="51:8" pos:end="51:29"><name pos:start="51:8" pos:end="51:29">PARAM_OPTION_AMBIGUOUS</name></expr>:</case>
+    <return pos:start="52:5" pos:end="52:26">return <expr pos:start="52:12" pos:end="52:25"><literal type="string" pos:start="52:12" pos:end="52:25">"is ambiguous"</literal></expr>;</return>
+  <case pos:start="53:3" pos:end="53:32">case <expr pos:start="53:8" pos:end="53:31"><name pos:start="53:8" pos:end="53:31">PARAM_REQUIRES_PARAMETER</name></expr>:</case>
+    <return pos:start="54:5" pos:end="54:32">return <expr pos:start="54:12" pos:end="54:31"><literal type="string" pos:start="54:12" pos:end="54:31">"requires parameter"</literal></expr>;</return>
+  <case pos:start="55:3" pos:end="55:21">case <expr pos:start="55:8" pos:end="55:20"><name pos:start="55:8" pos:end="55:20">PARAM_BAD_USE</name></expr>:</case>
+    <return pos:start="56:5" pos:end="56:32">return <expr pos:start="56:12" pos:end="56:31"><literal type="string" pos:start="56:12" pos:end="56:31">"is badly used here"</literal></expr>;</return>
+  <case pos:start="57:3" pos:end="57:25">case <expr pos:start="57:8" pos:end="57:24"><name pos:start="57:8" pos:end="57:24">PARAM_BAD_NUMERIC</name></expr>:</case>
+    <return pos:start="58:5" pos:end="58:51">return <expr pos:start="58:12" pos:end="58:50"><literal type="string" pos:start="58:12" pos:end="58:50">"expected a proper numerical parameter"</literal></expr>;</return>
+  <case pos:start="59:3" pos:end="59:30">case <expr pos:start="59:8" pos:end="59:29"><name pos:start="59:8" pos:end="59:29">PARAM_NEGATIVE_NUMERIC</name></expr>:</case>
+    <return pos:start="60:5" pos:end="60:53">return <expr pos:start="60:12" pos:end="60:52"><literal type="string" pos:start="60:12" pos:end="60:52">"expected a positive numerical parameter"</literal></expr>;</return>
+  <case pos:start="61:3" pos:end="61:36">case <expr pos:start="61:8" pos:end="61:35"><name pos:start="61:8" pos:end="61:35">PARAM_LIBCURL_DOESNT_SUPPORT</name></expr>:</case>
+    <return pos:start="62:5" pos:end="62:64">return <expr pos:start="62:12" pos:end="62:63"><literal type="string" pos:start="62:12" pos:end="62:63">"the installed libcurl version doesn't support this"</literal></expr>;</return>
+  <case pos:start="63:3" pos:end="63:42">case <expr pos:start="63:8" pos:end="63:41"><name pos:start="63:8" pos:end="63:41">PARAM_LIBCURL_UNSUPPORTED_PROTOCOL</name></expr>:</case>
+    <return pos:start="64:5" pos:end="64:60">return <expr pos:start="64:12" pos:end="64:59"><literal type="string" pos:start="64:12" pos:end="64:59">"a specified protocol is unsupported by libcurl"</literal></expr>;</return>
+  <case pos:start="65:3" pos:end="65:20">case <expr pos:start="65:8" pos:end="65:19"><name pos:start="65:8" pos:end="65:19">PARAM_NO_MEM</name></expr>:</case>
+    <return pos:start="66:5" pos:end="66:27">return <expr pos:start="66:12" pos:end="66:26"><literal type="string" pos:start="66:12" pos:end="66:26">"out of memory"</literal></expr>;</return>
+  <case pos:start="67:3" pos:end="67:23">case <expr pos:start="67:8" pos:end="67:22"><name pos:start="67:8" pos:end="67:22">PARAM_NO_PREFIX</name></expr>:</case>
+    <return pos:start="68:5" pos:end="68:68">return <expr pos:start="68:12" pos:end="68:67"><literal type="string" pos:start="68:12" pos:end="68:67">"the given option can't be reversed with a --no- prefix"</literal></expr>;</return>
+  <case pos:start="69:3" pos:end="69:30">case <expr pos:start="69:8" pos:end="69:29"><name pos:start="69:8" pos:end="69:29">PARAM_NUMBER_TOO_LARGE</name></expr>:</case>
+    <return pos:start="70:5" pos:end="70:30">return <expr pos:start="70:12" pos:end="70:29"><literal type="string" pos:start="70:12" pos:end="70:29">"too large number"</literal></expr>;</return>
+  <case pos:start="71:3" pos:end="71:28">case <expr pos:start="71:8" pos:end="71:27"><name pos:start="71:8" pos:end="71:27">PARAM_NO_NOT_BOOLEAN</name></expr>:</case>
+    <return pos:start="72:5" pos:end="72:58">return <expr pos:start="72:12" pos:end="72:57"><literal type="string" pos:start="72:12" pos:end="72:57">"used '--no-' for option that isn't a boolean"</literal></expr>;</return>
+  <case pos:start="73:3" pos:end="73:34">case <expr pos:start="73:8" pos:end="73:33"><name pos:start="73:8" pos:end="73:33">PARAM_CONTDISP_SHOW_HEADER</name></expr>:</case>
+    <return pos:start="74:5" pos:end="74:73">return <expr pos:start="74:12" pos:end="74:72"><literal type="string" pos:start="74:12" pos:end="74:72">"showing headers and --remote-header-name cannot be combined"</literal></expr>;</return>
+  <case pos:start="75:3" pos:end="75:34">case <expr pos:start="75:8" pos:end="75:33"><name pos:start="75:8" pos:end="75:33">PARAM_CONTDISP_RESUME_FROM</name></expr>:</case>
+    <return pos:start="76:5" pos:end="76:71">return <expr pos:start="76:12" pos:end="76:70"><literal type="string" pos:start="76:12" pos:end="76:70">"--continue-at and --remote-header-name cannot be combined"</literal></expr>;</return>
+  <case pos:start="77:3" pos:end="77:24">case <expr pos:start="77:8" pos:end="77:23"><name pos:start="77:8" pos:end="77:23">PARAM_READ_ERROR</name></expr>:</case>
+    <return pos:start="78:5" pos:end="78:51">return <expr pos:start="78:12" pos:end="78:50"><literal type="string" pos:start="78:12" pos:end="78:50">"error encountered when reading a file"</literal></expr>;</return>
+  <case pos:start="79:3" pos:end="79:26">case <expr pos:start="79:8" pos:end="79:25"><name pos:start="79:8" pos:end="79:25">PARAM_EXPAND_ERROR</name></expr>:</case>
+    <return pos:start="80:5" pos:end="80:40">return <expr pos:start="80:12" pos:end="80:39"><literal type="string" pos:start="80:12" pos:end="80:39">"variable expansion failure"</literal></expr>;</return>
+  <case pos:start="81:3" pos:end="81:26">case <expr pos:start="81:8" pos:end="81:25"><name pos:start="81:8" pos:end="81:25">PARAM_BLANK_STRING</name></expr>:</case>
+    <return pos:start="82:5" pos:end="82:54">return <expr pos:start="82:12" pos:end="82:53"><literal type="string" pos:start="82:12" pos:end="82:53">"blank argument where content is expected"</literal></expr>;</return>
+  <default pos:start="83:3" pos:end="83:10">default:</default>
+    <return pos:start="84:5" pos:end="84:27">return <expr pos:start="84:12" pos:end="84:26"><literal type="string" pos:start="84:12" pos:end="84:26">"unknown error"</literal></expr>;</return>
+  </block_content>}</block></switch>
+</block_content>}</block></function>
+
+<function pos:start="88:1" pos:end="110:1"><type pos:start="88:1" pos:end="88:3"><name pos:start="88:1" pos:end="88:3">int</name></type> <name pos:start="88:5" pos:end="88:18">SetHTTPrequest</name><parameter_list pos:start="88:19" pos:end="88:79">(<parameter pos:start="88:20" pos:end="88:49"><decl pos:start="88:20" pos:end="88:49"><type pos:start="88:20" pos:end="88:49"><name pos:start="88:20" pos:end="88:41"><name pos:start="88:20" pos:end="88:25">struct</name> <name pos:start="88:27" pos:end="88:41">OperationConfig</name></name> <modifier pos:start="88:43" pos:end="88:43">*</modifier></type><name pos:start="88:44" pos:end="88:49">config</name></decl></parameter>, <parameter pos:start="88:52" pos:end="88:62"><decl pos:start="88:52" pos:end="88:62"><type pos:start="88:52" pos:end="88:62"><name pos:start="88:52" pos:end="88:58">HttpReq</name></type> <name pos:start="88:60" pos:end="88:62">req</name></decl></parameter>, <parameter pos:start="88:65" pos:end="88:78"><decl pos:start="88:65" pos:end="88:78"><type pos:start="88:65" pos:end="88:78"><name pos:start="88:65" pos:end="88:71">HttpReq</name> <modifier pos:start="88:73" pos:end="88:73">*</modifier></type><name pos:start="88:74" pos:end="88:78">store</name></decl></parameter>)</parameter_list>
+<block pos:start="89:1" pos:end="110:1">{<block_content pos:start="91:3" pos:end="109:11">
+  <comment type="block" pos:start="90:3" pos:end="90:54">/* this mirrors the HttpReq enum in tool_sdecls.h */</comment>
+  <decl_stmt pos:start="91:3" pos:end="98:4"><decl pos:start="91:3" pos:end="98:3"><type pos:start="91:3" pos:end="91:14"><specifier pos:start="91:3" pos:end="91:7">const</specifier> <name pos:start="91:9" pos:end="91:12">char</name> <modifier pos:start="91:14" pos:end="91:14">*</modifier></type><name pos:start="91:15" pos:end="91:23"><name pos:start="91:15" pos:end="91:21">reqname</name><index pos:start="91:22" pos:end="91:23">[]</index></name><init pos:start="91:24" pos:end="98:3">= <expr pos:start="91:26" pos:end="98:3"><block pos:start="91:26" pos:end="98:3">{
+    <expr pos:start="92:5" pos:end="92:6"><literal type="string" pos:start="92:5" pos:end="92:6">""</literal></expr>, <comment type="block" pos:start="92:9" pos:end="92:20">/* unspec */</comment>
+    <expr pos:start="93:5" pos:end="93:21"><literal type="string" pos:start="93:5" pos:end="93:21">"GET (-G, --get)"</literal></expr>,
+    <expr pos:start="94:5" pos:end="94:23"><literal type="string" pos:start="94:5" pos:end="94:23">"HEAD (-I, --head)"</literal></expr>,
+    <expr pos:start="95:5" pos:end="95:37"><literal type="string" pos:start="95:5" pos:end="95:37">"multipart formpost (-F, --form)"</literal></expr>,
+    <expr pos:start="96:5" pos:end="96:23"><literal type="string" pos:start="96:5" pos:end="96:23">"POST (-d, --data)"</literal></expr>,
+    <expr pos:start="97:5" pos:end="97:29"><literal type="string" pos:start="97:5" pos:end="97:29">"PUT (-T, --upload-file)"</literal></expr>
+  }</block></expr></init></decl>;</decl_stmt>
+
+  <if_stmt pos:start="100:3" pos:end="104:3"><if pos:start="100:3" pos:end="104:3">if<condition pos:start="100:5" pos:end="101:21">(<expr pos:start="100:6" pos:end="101:20"><operator pos:start="100:6" pos:end="100:6">(</operator><operator pos:start="100:7" pos:end="100:7">*</operator><name pos:start="100:8" pos:end="100:12">store</name> <operator pos:start="100:14" pos:end="100:15">==</operator> <name pos:start="100:17" pos:end="100:30">HTTPREQ_UNSPEC</name><operator pos:start="100:31" pos:end="100:31">)</operator> <operator pos:start="100:33" pos:end="100:34">||</operator>
+     <operator pos:start="101:6" pos:end="101:6">(</operator><operator pos:start="101:7" pos:end="101:7">*</operator><name pos:start="101:8" pos:end="101:12">store</name> <operator pos:start="101:14" pos:end="101:15">==</operator> <name pos:start="101:17" pos:end="101:19">req</name><operator pos:start="101:20" pos:end="101:20">)</operator></expr>)</condition> <block pos:start="101:23" pos:end="104:3">{<block_content pos:start="102:5" pos:end="103:13">
+    <expr_stmt pos:start="102:5" pos:end="102:17"><expr pos:start="102:5" pos:end="102:16"><operator pos:start="102:5" pos:end="102:5">*</operator><name pos:start="102:6" pos:end="102:10">store</name> <operator pos:start="102:12" pos:end="102:12">=</operator> <name pos:start="102:14" pos:end="102:16">req</name></expr>;</expr_stmt>
+    <return pos:start="103:5" pos:end="103:13">return <expr pos:start="103:12" pos:end="103:12"><literal type="number" pos:start="103:12" pos:end="103:12">0</literal></expr>;</return>
+  </block_content>}</block></if></if_stmt>
+  <expr_stmt pos:start="105:3" pos:end="107:39"><expr pos:start="105:3" pos:end="107:38"><call pos:start="105:3" pos:end="107:38"><name pos:start="105:3" pos:end="105:7">warnf</name><argument_list pos:start="105:8" pos:end="107:38">(<argument pos:start="105:9" pos:end="105:22"><expr pos:start="105:9" pos:end="105:22"><name pos:start="105:9" pos:end="105:22"><name pos:start="105:9" pos:end="105:14">config</name><operator pos:start="105:15" pos:end="105:16">-&gt;</operator><name pos:start="105:17" pos:end="105:22">global</name></name></expr></argument>, <argument pos:start="105:25" pos:end="106:39"><expr pos:start="105:25" pos:end="106:39"><literal type="string" pos:start="105:25" pos:end="105:71">"You can only select one HTTP request method! "</literal>
+        <literal type="string" pos:start="106:9" pos:end="106:39">"You asked for both %s and %s."</literal></expr></argument>,
+        <argument pos:start="107:9" pos:end="107:20"><expr pos:start="107:9" pos:end="107:20"><name pos:start="107:9" pos:end="107:20"><name pos:start="107:9" pos:end="107:15">reqname</name><index pos:start="107:16" pos:end="107:20">[<expr pos:start="107:17" pos:end="107:19"><name pos:start="107:17" pos:end="107:19">req</name></expr>]</index></name></expr></argument>, <argument pos:start="107:23" pos:end="107:37"><expr pos:start="107:23" pos:end="107:37"><name pos:start="107:23" pos:end="107:37"><name pos:start="107:23" pos:end="107:29">reqname</name><index pos:start="107:30" pos:end="107:37">[<expr pos:start="107:31" pos:end="107:36"><operator pos:start="107:31" pos:end="107:31">*</operator><name pos:start="107:32" pos:end="107:36">store</name></expr>]</index></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+  <return pos:start="109:3" pos:end="109:11">return <expr pos:start="109:10" pos:end="109:10"><literal type="number" pos:start="109:10" pos:end="109:10">1</literal></expr>;</return>
+</block_content>}</block></function>
+
+<function pos:start="112:1" pos:end="136:1"><type pos:start="112:1" pos:end="112:4"><name pos:start="112:1" pos:end="112:4">void</name></type> <name pos:start="112:6" pos:end="112:25">customrequest_helper</name><parameter_list pos:start="112:26" pos:end="113:39">(<parameter pos:start="112:27" pos:end="112:56"><decl pos:start="112:27" pos:end="112:56"><type pos:start="112:27" pos:end="112:56"><name pos:start="112:27" pos:end="112:48"><name pos:start="112:27" pos:end="112:32">struct</name> <name pos:start="112:34" pos:end="112:48">OperationConfig</name></name> <modifier pos:start="112:50" pos:end="112:50">*</modifier></type><name pos:start="112:51" pos:end="112:56">config</name></decl></parameter>, <parameter pos:start="112:59" pos:end="112:69"><decl pos:start="112:59" pos:end="112:69"><type pos:start="112:59" pos:end="112:69"><name pos:start="112:59" pos:end="112:65">HttpReq</name></type> <name pos:start="112:67" pos:end="112:69">req</name></decl></parameter>,
+                          <parameter pos:start="113:27" pos:end="113:38"><decl pos:start="113:27" pos:end="113:38"><type pos:start="113:27" pos:end="113:38"><name pos:start="113:27" pos:end="113:30">char</name> <modifier pos:start="113:32" pos:end="113:32">*</modifier></type><name pos:start="113:33" pos:end="113:38">method</name></decl></parameter>)</parameter_list>
+<block pos:start="114:1" pos:end="136:1">{<block_content pos:start="116:3" pos:end="135:3">
+  <comment type="block" pos:start="115:3" pos:end="115:54">/* this mirrors the HttpReq enum in tool_sdecls.h */</comment>
+  <decl_stmt pos:start="116:3" pos:end="123:4"><decl pos:start="116:3" pos:end="123:3"><type pos:start="116:3" pos:end="116:14"><specifier pos:start="116:3" pos:end="116:7">const</specifier> <name pos:start="116:9" pos:end="116:12">char</name> <modifier pos:start="116:14" pos:end="116:14">*</modifier></type><name pos:start="116:15" pos:end="116:20"><name pos:start="116:15" pos:end="116:18">dflt</name><index pos:start="116:19" pos:end="116:20">[]</index></name><init pos:start="116:21" pos:end="123:3">= <expr pos:start="116:23" pos:end="123:3"><block pos:start="116:23" pos:end="123:3">{
+    <expr pos:start="117:5" pos:end="117:9"><literal type="string" pos:start="117:5" pos:end="117:9">"GET"</literal></expr>,
+    <expr pos:start="118:5" pos:end="118:9"><literal type="string" pos:start="118:5" pos:end="118:9">"GET"</literal></expr>,
+    <expr pos:start="119:5" pos:end="119:10"><literal type="string" pos:start="119:5" pos:end="119:10">"HEAD"</literal></expr>,
+    <expr pos:start="120:5" pos:end="120:10"><literal type="string" pos:start="120:5" pos:end="120:10">"POST"</literal></expr>,
+    <expr pos:start="121:5" pos:end="121:10"><literal type="string" pos:start="121:5" pos:end="121:10">"POST"</literal></expr>,
+    <expr pos:start="122:5" pos:end="122:9"><literal type="string" pos:start="122:5" pos:end="122:9">"PUT"</literal></expr>
+  }</block></expr></init></decl>;</decl_stmt>
+
+  <if_stmt pos:start="125:3" pos:end="135:3"><if pos:start="125:3" pos:end="126:5">if<condition pos:start="125:5" pos:end="125:13">(<expr pos:start="125:6" pos:end="125:12"><operator pos:start="125:6" pos:end="125:6">!</operator><name pos:start="125:7" pos:end="125:12">method</name></expr>)</condition><block type="pseudo" pos:start="126:5" pos:end="126:5"><block_content pos:start="126:5" pos:end="126:5">
+    <empty_stmt pos:start="126:5" pos:end="126:5">;</empty_stmt></block_content></block></if>
+  <if type="elseif" pos:start="127:3" pos:end="130:3">else if<condition pos:start="127:10" pos:end="127:43">(<expr pos:start="127:11" pos:end="127:42"><call pos:start="127:11" pos:end="127:42"><name pos:start="127:11" pos:end="127:23">curl_strequal</name><argument_list pos:start="127:24" pos:end="127:42">(<argument pos:start="127:25" pos:end="127:30"><expr pos:start="127:25" pos:end="127:30"><name pos:start="127:25" pos:end="127:30">method</name></expr></argument>, <argument pos:start="127:33" pos:end="127:41"><expr pos:start="127:33" pos:end="127:41"><name pos:start="127:33" pos:end="127:41"><name pos:start="127:33" pos:end="127:36">dflt</name><index pos:start="127:37" pos:end="127:41">[<expr pos:start="127:38" pos:end="127:40"><name pos:start="127:38" pos:end="127:40">req</name></expr>]</index></name></expr></argument>)</argument_list></call></expr>)</condition> <block pos:start="127:45" pos:end="130:3">{<block_content pos:start="128:5" pos:end="129:34">
+    <expr_stmt pos:start="128:5" pos:end="129:34"><expr pos:start="128:5" pos:end="129:33"><call pos:start="128:5" pos:end="129:33"><name pos:start="128:5" pos:end="128:9">notef</name><argument_list pos:start="128:10" pos:end="129:33">(<argument pos:start="128:11" pos:end="128:24"><expr pos:start="128:11" pos:end="128:24"><name pos:start="128:11" pos:end="128:24"><name pos:start="128:11" pos:end="128:16">config</name><operator pos:start="128:17" pos:end="128:18">-&gt;</operator><name pos:start="128:19" pos:end="128:24">global</name></name></expr></argument>, <argument pos:start="128:27" pos:end="129:21"><expr pos:start="128:27" pos:end="129:21"><literal type="string" pos:start="128:27" pos:end="128:78">"Unnecessary use of -X or --request, %s is already "</literal>
+          <literal type="string" pos:start="129:11" pos:end="129:21">"inferred."</literal></expr></argument>, <argument pos:start="129:24" pos:end="129:32"><expr pos:start="129:24" pos:end="129:32"><name pos:start="129:24" pos:end="129:32"><name pos:start="129:24" pos:end="129:27">dflt</name><index pos:start="129:28" pos:end="129:32">[<expr pos:start="129:29" pos:end="129:31"><name pos:start="129:29" pos:end="129:31">req</name></expr>]</index></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  </block_content>}</block></if>
+  <if type="elseif" pos:start="131:3" pos:end="135:3">else if<condition pos:start="131:10" pos:end="131:40">(<expr pos:start="131:11" pos:end="131:39"><call pos:start="131:11" pos:end="131:39"><name pos:start="131:11" pos:end="131:23">curl_strequal</name><argument_list pos:start="131:24" pos:end="131:39">(<argument pos:start="131:25" pos:end="131:30"><expr pos:start="131:25" pos:end="131:30"><name pos:start="131:25" pos:end="131:30">method</name></expr></argument>, <argument pos:start="131:33" pos:end="131:38"><expr pos:start="131:33" pos:end="131:38"><literal type="string" pos:start="131:33" pos:end="131:38">"head"</literal></expr></argument>)</argument_list></call></expr>)</condition> <block pos:start="131:42" pos:end="135:3">{<block_content pos:start="132:5" pos:end="134:65">
+    <expr_stmt pos:start="132:5" pos:end="134:65"><expr pos:start="132:5" pos:end="134:64"><call pos:start="132:5" pos:end="134:64"><name pos:start="132:5" pos:end="132:9">warnf</name><argument_list pos:start="132:10" pos:end="134:64">(<argument pos:start="132:11" pos:end="132:24"><expr pos:start="132:11" pos:end="132:24"><name pos:start="132:11" pos:end="132:24"><name pos:start="132:11" pos:end="132:16">config</name><operator pos:start="132:17" pos:end="132:18">-&gt;</operator><name pos:start="132:19" pos:end="132:24">global</name></name></expr></argument>,
+          <argument pos:start="133:11" pos:end="134:63"><expr pos:start="133:11" pos:end="134:63"><literal type="string" pos:start="133:11" pos:end="133:78">"Setting custom HTTP method to HEAD with -X/--request may not work "</literal>
+          <literal type="string" pos:start="134:11" pos:end="134:63">"the way you want. Consider using -I/--head instead."</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  </block_content>}</block></if></if_stmt>
+</block_content>}</block></function>
+</unit>

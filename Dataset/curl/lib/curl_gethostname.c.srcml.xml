@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/lib/curl_gethostname.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+
+<cpp:include pos:start="25:1" pos:end="25:23">#<cpp:directive pos:start="25:2" pos:end="25:8">include</cpp:directive> <cpp:file pos:start="25:10" pos:end="25:23">"curl_setup.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="27:1" pos:end="27:29">#<cpp:directive pos:start="27:2" pos:end="27:8">include</cpp:directive> <cpp:file pos:start="27:10" pos:end="27:29">"curl_gethostname.h"</cpp:file></cpp:include>
+
+<comment type="block" pos:start="29:1" pos:end="51:3">/*
+ * Curl_gethostname() is a wrapper around gethostname() which allows
+ * overriding the host name that the function would normally return.
+ * This capability is used by the test suite to verify exact matching
+ * of NTLM authentication, which exercises libcurl's MD4 and DES code
+ * as well as by the SMTP module when a hostname is not provided.
+ *
+ * For libcurl debug enabled builds host name overriding takes place
+ * when environment variable CURL_GETHOSTNAME is set, using the value
+ * held by the variable to override returned host name.
+ *
+ * Note: The function always returns the un-qualified hostname rather
+ * than being provider dependent.
+ *
+ * For libcurl shared library release builds the test suite preloads
+ * another shared library named libhostname using the LD_PRELOAD
+ * mechanism which intercepts, and might override, the gethostname()
+ * function call. In this case a given platform must support the
+ * LD_PRELOAD mechanism and additionally have environment variable
+ * CURL_GETHOSTNAME set in order to override the returned host name.
+ *
+ * For libcurl static library release builds no overriding takes place.
+ */</comment>
+
+<function pos:start="53:1" pos:end="102:1"><type pos:start="53:1" pos:end="53:3"><name pos:start="53:1" pos:end="53:3">int</name></type> <name pos:start="53:5" pos:end="53:20">Curl_gethostname</name><parameter_list pos:start="53:21" pos:end="53:70">(<parameter pos:start="53:22" pos:end="53:38"><decl pos:start="53:22" pos:end="53:38"><type pos:start="53:22" pos:end="53:38"><name pos:start="53:22" pos:end="53:25">char</name> <modifier pos:start="53:27" pos:end="53:27">*</modifier> <specifier pos:start="53:29" pos:end="53:33">const</specifier></type> <name pos:start="53:35" pos:end="53:38">name</name></decl></parameter>, <parameter pos:start="53:41" pos:end="53:69"><decl pos:start="53:41" pos:end="53:69"><type pos:start="53:41" pos:end="53:69"><name pos:start="53:41" pos:end="53:61">GETHOSTNAME_TYPE_ARG2</name></type> <name pos:start="53:63" pos:end="53:69">namelen</name></decl></parameter>)</parameter_list>
+<block pos:start="54:1" pos:end="102:1">{<block_content pos:start="58:3" pos:end="101:0">
+<cpp:ifndef pos:start="55:1" pos:end="55:24">#<cpp:directive pos:start="55:2" pos:end="55:7">ifndef</cpp:directive> <name pos:start="55:9" pos:end="55:24">HAVE_GETHOSTNAME</name></cpp:ifndef>
+
+  <comment type="block" pos:start="57:3" pos:end="57:61">/* Allow compilation and return failure when unavailable */</comment>
+  <expr_stmt pos:start="58:3" pos:end="58:14"><expr pos:start="58:3" pos:end="58:13"><operator pos:start="58:3" pos:end="58:3">(</operator><name pos:start="58:4" pos:end="58:7">void</name><operator pos:start="58:8" pos:end="58:8">)</operator> <name pos:start="58:10" pos:end="58:13">name</name></expr>;</expr_stmt>
+  <expr_stmt pos:start="59:3" pos:end="59:17"><expr pos:start="59:3" pos:end="59:16"><operator pos:start="59:3" pos:end="59:3">(</operator><name pos:start="59:4" pos:end="59:7">void</name><operator pos:start="59:8" pos:end="59:8">)</operator> <name pos:start="59:10" pos:end="59:16">namelen</name></expr>;</expr_stmt>
+  <return pos:start="60:3" pos:end="63:0">return <expr pos:start="60:10" pos:end="60:11"><operator pos:start="60:10" pos:end="60:10">-</operator><literal type="number" pos:start="60:11" pos:end="60:11">1</literal></expr>;</return>
+
+<cpp:else pos:start="62:1" pos:end="62:5">#<cpp:directive pos:start="62:2" pos:end="62:5">else</cpp:directive></cpp:else>
+  <decl_stmt pos:start="63:3" pos:end="63:10"><decl pos:start="63:3" pos:end="63:9"><type pos:start="63:3" pos:end="63:5"><name pos:start="63:3" pos:end="63:5">int</name></type> <name pos:start="63:7" pos:end="63:9">err</name></decl>;</decl_stmt>
+  <decl_stmt pos:start="64:3" pos:end="67:0"><decl pos:start="64:3" pos:end="64:11"><type pos:start="64:3" pos:end="64:8"><name pos:start="64:3" pos:end="64:6">char</name> <modifier pos:start="64:8" pos:end="64:8">*</modifier></type><name pos:start="64:9" pos:end="64:11">dot</name></decl>;</decl_stmt>
+
+<cpp:ifdef pos:start="66:1" pos:end="66:17">#<cpp:directive pos:start="66:2" pos:end="66:6">ifdef</cpp:directive> <name pos:start="66:8" pos:end="66:17">DEBUGBUILD</name></cpp:ifdef>
+
+  <comment type="block" pos:start="68:3" pos:end="68:76">/* Override host name when environment variable CURL_GETHOSTNAME is set */</comment>
+  <decl_stmt pos:start="69:3" pos:end="69:58"><decl pos:start="69:3" pos:end="69:57"><type pos:start="69:3" pos:end="69:14"><specifier pos:start="69:3" pos:end="69:7">const</specifier> <name pos:start="69:9" pos:end="69:12">char</name> <modifier pos:start="69:14" pos:end="69:14">*</modifier></type><name pos:start="69:15" pos:end="69:28">force_hostname</name> <init pos:start="69:30" pos:end="69:57">= <expr pos:start="69:32" pos:end="69:57"><call pos:start="69:32" pos:end="69:57"><name pos:start="69:32" pos:end="69:37">getenv</name><argument_list pos:start="69:38" pos:end="69:57">(<argument pos:start="69:39" pos:end="69:56"><expr pos:start="69:39" pos:end="69:56"><literal type="string" pos:start="69:39" pos:end="69:56">"CURL_GETHOSTNAME"</literal></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+  <if_stmt pos:start="70:3" pos:end="80:0"><if pos:start="70:3" pos:end="73:3">if<condition pos:start="70:5" pos:end="70:20">(<expr pos:start="70:6" pos:end="70:19"><name pos:start="70:6" pos:end="70:19">force_hostname</name></expr>)</condition> <block pos:start="70:22" pos:end="73:3">{<block_content pos:start="71:5" pos:end="72:12">
+    <expr_stmt pos:start="71:5" pos:end="71:43"><expr pos:start="71:5" pos:end="71:42"><call pos:start="71:5" pos:end="71:42"><name pos:start="71:5" pos:end="71:11">strncpy</name><argument_list pos:start="71:12" pos:end="71:42">(<argument pos:start="71:13" pos:end="71:16"><expr pos:start="71:13" pos:end="71:16"><name pos:start="71:13" pos:end="71:16">name</name></expr></argument>, <argument pos:start="71:19" pos:end="71:32"><expr pos:start="71:19" pos:end="71:32"><name pos:start="71:19" pos:end="71:32">force_hostname</name></expr></argument>, <argument pos:start="71:35" pos:end="71:41"><expr pos:start="71:35" pos:end="71:41"><name pos:start="71:35" pos:end="71:41">namelen</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+    <expr_stmt pos:start="72:5" pos:end="72:12"><expr pos:start="72:5" pos:end="72:11"><name pos:start="72:5" pos:end="72:7">err</name> <operator pos:start="72:9" pos:end="72:9">=</operator> <literal type="number" pos:start="72:11" pos:end="72:11">0</literal></expr>;</expr_stmt>
+  </block_content>}</block></if>
+  <else pos:start="74:3" pos:end="80:0">else <block pos:start="74:8" pos:end="80:0">{<block_content pos:start="75:5" pos:end="76:37">
+    <expr_stmt pos:start="75:5" pos:end="75:19"><expr pos:start="75:5" pos:end="75:18"><name pos:start="75:5" pos:end="75:11"><name pos:start="75:5" pos:end="75:8">name</name><index pos:start="75:9" pos:end="75:11">[<expr pos:start="75:10" pos:end="75:10"><literal type="number" pos:start="75:10" pos:end="75:10">0</literal></expr>]</index></name> <operator pos:start="75:13" pos:end="75:13">=</operator> <literal type="char" pos:start="75:15" pos:end="75:18">'\0'</literal></expr>;</expr_stmt>
+    <expr_stmt pos:start="76:5" pos:end="76:37"><expr pos:start="76:5" pos:end="76:36"><name pos:start="76:5" pos:end="76:7">err</name> <operator pos:start="76:9" pos:end="76:9">=</operator> <call pos:start="76:11" pos:end="76:36"><name pos:start="76:11" pos:end="76:21">gethostname</name><argument_list pos:start="76:22" pos:end="76:36">(<argument pos:start="76:23" pos:end="76:26"><expr pos:start="76:23" pos:end="76:26"><name pos:start="76:23" pos:end="76:26">name</name></expr></argument>, <argument pos:start="76:29" pos:end="76:35"><expr pos:start="76:29" pos:end="76:35"><name pos:start="76:29" pos:end="76:35">namelen</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  </block_content>}</block></else></if_stmt>
+
+<cpp:else pos:start="79:1" pos:end="79:5">#<cpp:directive pos:start="79:2" pos:end="79:5">else</cpp:directive></cpp:else> <comment type="block" pos:start="79:7" pos:end="79:22">/* DEBUGBUILD */</comment>
+
+  <comment type="block" pos:start="81:3" pos:end="83:44">/* The call to system's gethostname() might get intercepted by the
+     libhostname library when libcurl is built as a non-debug shared
+     library when running the test suite. */</comment>
+  <expr_stmt pos:start="84:3" pos:end="84:17"><expr pos:start="84:3" pos:end="84:16"><name pos:start="84:3" pos:end="84:9"><name pos:start="84:3" pos:end="84:6">name</name><index pos:start="84:7" pos:end="84:9">[<expr pos:start="84:8" pos:end="84:8"><literal type="number" pos:start="84:8" pos:end="84:8">0</literal></expr>]</index></name> <operator pos:start="84:11" pos:end="84:11">=</operator> <literal type="char" pos:start="84:13" pos:end="84:16">'\0'</literal></expr>;</expr_stmt>
+  <expr_stmt pos:start="85:3" pos:end="88:0"><expr pos:start="85:3" pos:end="85:34"><name pos:start="85:3" pos:end="85:5">err</name> <operator pos:start="85:7" pos:end="85:7">=</operator> <call pos:start="85:9" pos:end="85:34"><name pos:start="85:9" pos:end="85:19">gethostname</name><argument_list pos:start="85:20" pos:end="85:34">(<argument pos:start="85:21" pos:end="85:24"><expr pos:start="85:21" pos:end="85:24"><name pos:start="85:21" pos:end="85:24">name</name></expr></argument>, <argument pos:start="85:27" pos:end="85:33"><expr pos:start="85:27" pos:end="85:33"><name pos:start="85:27" pos:end="85:33">namelen</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+<cpp:endif pos:start="87:1" pos:end="87:6">#<cpp:directive pos:start="87:2" pos:end="87:6">endif</cpp:directive></cpp:endif>
+
+  <expr_stmt pos:start="89:3" pos:end="89:27"><expr pos:start="89:3" pos:end="89:26"><name pos:start="89:3" pos:end="89:19"><name pos:start="89:3" pos:end="89:6">name</name><index pos:start="89:7" pos:end="89:19">[<expr pos:start="89:8" pos:end="89:18"><name pos:start="89:8" pos:end="89:14">namelen</name> <operator pos:start="89:16" pos:end="89:16">-</operator> <literal type="number" pos:start="89:18" pos:end="89:18">1</literal></expr>]</index></name> <operator pos:start="89:21" pos:end="89:21">=</operator> <literal type="char" pos:start="89:23" pos:end="89:26">'\0'</literal></expr>;</expr_stmt>
+
+  <if_stmt pos:start="91:3" pos:end="92:15"><if pos:start="91:3" pos:end="92:15">if<condition pos:start="91:5" pos:end="91:9">(<expr pos:start="91:6" pos:end="91:8"><name pos:start="91:6" pos:end="91:8">err</name></expr>)</condition><block type="pseudo" pos:start="92:5" pos:end="92:15"><block_content pos:start="92:5" pos:end="92:15">
+    <return pos:start="92:5" pos:end="92:15">return <expr pos:start="92:12" pos:end="92:14"><name pos:start="92:12" pos:end="92:14">err</name></expr>;</return></block_content></block></if></if_stmt>
+
+  <comment type="block" pos:start="94:3" pos:end="94:48">/* Truncate domain, leave only machine name */</comment>
+  <expr_stmt pos:start="95:3" pos:end="95:26"><expr pos:start="95:3" pos:end="95:25"><name pos:start="95:3" pos:end="95:5">dot</name> <operator pos:start="95:7" pos:end="95:7">=</operator> <call pos:start="95:9" pos:end="95:25"><name pos:start="95:9" pos:end="95:14">strchr</name><argument_list pos:start="95:15" pos:end="95:25">(<argument pos:start="95:16" pos:end="95:19"><expr pos:start="95:16" pos:end="95:19"><name pos:start="95:16" pos:end="95:19">name</name></expr></argument>, <argument pos:start="95:22" pos:end="95:24"><expr pos:start="95:22" pos:end="95:24"><literal type="char" pos:start="95:22" pos:end="95:24">'.'</literal></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  <if_stmt pos:start="96:3" pos:end="97:16"><if pos:start="96:3" pos:end="97:16">if<condition pos:start="96:5" pos:end="96:9">(<expr pos:start="96:6" pos:end="96:8"><name pos:start="96:6" pos:end="96:8">dot</name></expr>)</condition><block type="pseudo" pos:start="97:5" pos:end="97:16"><block_content pos:start="97:5" pos:end="97:16">
+    <expr_stmt pos:start="97:5" pos:end="97:16"><expr pos:start="97:5" pos:end="97:15"><operator pos:start="97:5" pos:end="97:5">*</operator><name pos:start="97:6" pos:end="97:8">dot</name> <operator pos:start="97:10" pos:end="97:10">=</operator> <literal type="char" pos:start="97:12" pos:end="97:15">'\0'</literal></expr>;</expr_stmt></block_content></block></if></if_stmt>
+
+  <return pos:start="99:3" pos:end="101:0">return <expr pos:start="99:10" pos:end="99:10"><literal type="number" pos:start="99:10" pos:end="99:10">0</literal></expr>;</return>
+<cpp:endif pos:start="100:1" pos:end="100:6">#<cpp:directive pos:start="100:2" pos:end="100:6">endif</cpp:directive></cpp:endif>
+
+</block_content>}</block></function>
+</unit>

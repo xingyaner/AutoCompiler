@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/lib/curl_endian.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+
+<cpp:include pos:start="25:1" pos:end="25:23">#<cpp:directive pos:start="25:2" pos:end="25:8">include</cpp:directive> <cpp:file pos:start="25:10" pos:end="25:23">"curl_setup.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="27:1" pos:end="27:24">#<cpp:directive pos:start="27:2" pos:end="27:8">include</cpp:directive> <cpp:file pos:start="27:10" pos:end="27:24">"curl_endian.h"</cpp:file></cpp:include>
+
+<comment type="block" pos:start="29:1" pos:end="41:3">/*
+ * Curl_read16_le()
+ *
+ * This function converts a 16-bit integer from the little endian format, as
+ * used in the incoming package to whatever endian format we're using
+ * natively.
+ *
+ * Parameters:
+ *
+ * buf      [in]     - A pointer to a 2 byte buffer.
+ *
+ * Returns the integer.
+ */</comment>
+<function pos:start="42:1" pos:end="46:1"><type pos:start="42:1" pos:end="42:14"><name pos:start="42:1" pos:end="42:8">unsigned</name> <name pos:start="42:10" pos:end="42:14">short</name></type> <name pos:start="42:16" pos:end="42:29">Curl_read16_le</name><parameter_list pos:start="42:30" pos:end="42:55">(<parameter pos:start="42:31" pos:end="42:54"><decl pos:start="42:31" pos:end="42:54"><type pos:start="42:31" pos:end="42:51"><specifier pos:start="42:31" pos:end="42:35">const</specifier> <name pos:start="42:37" pos:end="42:44">unsigned</name> <name pos:start="42:46" pos:end="42:49">char</name> <modifier pos:start="42:51" pos:end="42:51">*</modifier></type><name pos:start="42:52" pos:end="42:54">buf</name></decl></parameter>)</parameter_list>
+<block pos:start="43:1" pos:end="46:1">{<block_content pos:start="44:3" pos:end="45:57">
+  <return pos:start="44:3" pos:end="45:57">return <expr pos:start="44:10" pos:end="45:56"><operator pos:start="44:10" pos:end="44:10">(</operator><name pos:start="44:11" pos:end="44:18">unsigned</name> <name pos:start="44:20" pos:end="44:24">short</name><operator pos:start="44:25" pos:end="44:25">)</operator><operator pos:start="44:26" pos:end="44:26">(</operator><operator pos:start="44:27" pos:end="44:27">(</operator><operator pos:start="44:28" pos:end="44:28">(</operator><name pos:start="44:29" pos:end="44:36">unsigned</name> <name pos:start="44:38" pos:end="44:42">short</name><operator pos:start="44:43" pos:end="44:43">)</operator><name pos:start="44:44" pos:end="44:49"><name pos:start="44:44" pos:end="44:46">buf</name><index pos:start="44:47" pos:end="44:49">[<expr pos:start="44:48" pos:end="44:48"><literal type="number" pos:start="44:48" pos:end="44:48">0</literal></expr>]</index></name><operator pos:start="44:50" pos:end="44:50">)</operator> <operator pos:start="44:52" pos:end="44:52">|</operator>
+                          <operator pos:start="45:27" pos:end="45:27">(</operator><operator pos:start="45:28" pos:end="45:28">(</operator><name pos:start="45:29" pos:end="45:36">unsigned</name> <name pos:start="45:38" pos:end="45:42">short</name><operator pos:start="45:43" pos:end="45:43">)</operator><name pos:start="45:44" pos:end="45:49"><name pos:start="45:44" pos:end="45:46">buf</name><index pos:start="45:47" pos:end="45:49">[<expr pos:start="45:48" pos:end="45:48"><literal type="number" pos:start="45:48" pos:end="45:48">1</literal></expr>]</index></name> <operator pos:start="45:51" pos:end="45:52">&lt;&lt;</operator> <literal type="number" pos:start="45:54" pos:end="45:54">8</literal><operator pos:start="45:55" pos:end="45:55">)</operator><operator pos:start="45:56" pos:end="45:56">)</operator></expr>;</return>
+</block_content>}</block></function>
+
+<comment type="block" pos:start="48:1" pos:end="60:3">/*
+ * Curl_read32_le()
+ *
+ * This function converts a 32-bit integer from the little endian format, as
+ * used in the incoming package to whatever endian format we're using
+ * natively.
+ *
+ * Parameters:
+ *
+ * buf      [in]     - A pointer to a 4 byte buffer.
+ *
+ * Returns the integer.
+ */</comment>
+<function pos:start="61:1" pos:end="65:1"><type pos:start="61:1" pos:end="61:12"><name pos:start="61:1" pos:end="61:8">unsigned</name> <name pos:start="61:10" pos:end="61:12">int</name></type> <name pos:start="61:14" pos:end="61:27">Curl_read32_le</name><parameter_list pos:start="61:28" pos:end="61:53">(<parameter pos:start="61:29" pos:end="61:52"><decl pos:start="61:29" pos:end="61:52"><type pos:start="61:29" pos:end="61:49"><specifier pos:start="61:29" pos:end="61:33">const</specifier> <name pos:start="61:35" pos:end="61:42">unsigned</name> <name pos:start="61:44" pos:end="61:47">char</name> <modifier pos:start="61:49" pos:end="61:49">*</modifier></type><name pos:start="61:50" pos:end="61:52">buf</name></decl></parameter>)</parameter_list>
+<block pos:start="62:1" pos:end="65:1">{<block_content pos:start="63:3" pos:end="64:69">
+  <return pos:start="63:3" pos:end="64:69">return <expr pos:start="63:10" pos:end="64:68"><operator pos:start="63:10" pos:end="63:10">(</operator><operator pos:start="63:11" pos:end="63:11">(</operator><name pos:start="63:12" pos:end="63:19">unsigned</name> <name pos:start="63:21" pos:end="63:23">int</name><operator pos:start="63:24" pos:end="63:24">)</operator><name pos:start="63:25" pos:end="63:30"><name pos:start="63:25" pos:end="63:27">buf</name><index pos:start="63:28" pos:end="63:30">[<expr pos:start="63:29" pos:end="63:29"><literal type="number" pos:start="63:29" pos:end="63:29">0</literal></expr>]</index></name><operator pos:start="63:31" pos:end="63:31">)</operator> <operator pos:start="63:33" pos:end="63:33">|</operator> <operator pos:start="63:35" pos:end="63:35">(</operator><operator pos:start="63:36" pos:end="63:36">(</operator><name pos:start="63:37" pos:end="63:44">unsigned</name> <name pos:start="63:46" pos:end="63:48">int</name><operator pos:start="63:49" pos:end="63:49">)</operator><name pos:start="63:50" pos:end="63:55"><name pos:start="63:50" pos:end="63:52">buf</name><index pos:start="63:53" pos:end="63:55">[<expr pos:start="63:54" pos:end="63:54"><literal type="number" pos:start="63:54" pos:end="63:54">1</literal></expr>]</index></name> <operator pos:start="63:57" pos:end="63:58">&lt;&lt;</operator> <literal type="number" pos:start="63:60" pos:end="63:60">8</literal><operator pos:start="63:61" pos:end="63:61">)</operator> <operator pos:start="63:63" pos:end="63:63">|</operator>
+         <operator pos:start="64:10" pos:end="64:10">(</operator><operator pos:start="64:11" pos:end="64:11">(</operator><name pos:start="64:12" pos:end="64:19">unsigned</name> <name pos:start="64:21" pos:end="64:23">int</name><operator pos:start="64:24" pos:end="64:24">)</operator><name pos:start="64:25" pos:end="64:30"><name pos:start="64:25" pos:end="64:27">buf</name><index pos:start="64:28" pos:end="64:30">[<expr pos:start="64:29" pos:end="64:29"><literal type="number" pos:start="64:29" pos:end="64:29">2</literal></expr>]</index></name> <operator pos:start="64:32" pos:end="64:33">&lt;&lt;</operator> <literal type="number" pos:start="64:35" pos:end="64:36">16</literal><operator pos:start="64:37" pos:end="64:37">)</operator> <operator pos:start="64:39" pos:end="64:39">|</operator> <operator pos:start="64:41" pos:end="64:41">(</operator><operator pos:start="64:42" pos:end="64:42">(</operator><name pos:start="64:43" pos:end="64:50">unsigned</name> <name pos:start="64:52" pos:end="64:54">int</name><operator pos:start="64:55" pos:end="64:55">)</operator><name pos:start="64:56" pos:end="64:61"><name pos:start="64:56" pos:end="64:58">buf</name><index pos:start="64:59" pos:end="64:61">[<expr pos:start="64:60" pos:end="64:60"><literal type="number" pos:start="64:60" pos:end="64:60">3</literal></expr>]</index></name> <operator pos:start="64:63" pos:end="64:64">&lt;&lt;</operator> <literal type="number" pos:start="64:66" pos:end="64:67">24</literal><operator pos:start="64:68" pos:end="64:68">)</operator></expr>;</return>
+</block_content>}</block></function>
+
+<comment type="block" pos:start="67:1" pos:end="79:3">/*
+ * Curl_read16_be()
+ *
+ * This function converts a 16-bit integer from the big endian format, as
+ * used in the incoming package to whatever endian format we're using
+ * natively.
+ *
+ * Parameters:
+ *
+ * buf      [in]     - A pointer to a 2 byte buffer.
+ *
+ * Returns the integer.
+ */</comment>
+<function pos:start="80:1" pos:end="84:1"><type pos:start="80:1" pos:end="80:14"><name pos:start="80:1" pos:end="80:8">unsigned</name> <name pos:start="80:10" pos:end="80:14">short</name></type> <name pos:start="80:16" pos:end="80:29">Curl_read16_be</name><parameter_list pos:start="80:30" pos:end="80:55">(<parameter pos:start="80:31" pos:end="80:54"><decl pos:start="80:31" pos:end="80:54"><type pos:start="80:31" pos:end="80:51"><specifier pos:start="80:31" pos:end="80:35">const</specifier> <name pos:start="80:37" pos:end="80:44">unsigned</name> <name pos:start="80:46" pos:end="80:49">char</name> <modifier pos:start="80:51" pos:end="80:51">*</modifier></type><name pos:start="80:52" pos:end="80:54">buf</name></decl></parameter>)</parameter_list>
+<block pos:start="81:1" pos:end="84:1">{<block_content pos:start="82:3" pos:end="83:52">
+  <return pos:start="82:3" pos:end="83:52">return <expr pos:start="82:10" pos:end="83:51"><operator pos:start="82:10" pos:end="82:10">(</operator><name pos:start="82:11" pos:end="82:18">unsigned</name> <name pos:start="82:20" pos:end="82:24">short</name><operator pos:start="82:25" pos:end="82:25">)</operator><operator pos:start="82:26" pos:end="82:26">(</operator><operator pos:start="82:27" pos:end="82:27">(</operator><operator pos:start="82:28" pos:end="82:28">(</operator><name pos:start="82:29" pos:end="82:36">unsigned</name> <name pos:start="82:38" pos:end="82:42">short</name><operator pos:start="82:43" pos:end="82:43">)</operator><name pos:start="82:44" pos:end="82:49"><name pos:start="82:44" pos:end="82:46">buf</name><index pos:start="82:47" pos:end="82:49">[<expr pos:start="82:48" pos:end="82:48"><literal type="number" pos:start="82:48" pos:end="82:48">0</literal></expr>]</index></name> <operator pos:start="82:51" pos:end="82:52">&lt;&lt;</operator> <literal type="number" pos:start="82:54" pos:end="82:54">8</literal><operator pos:start="82:55" pos:end="82:55">)</operator> <operator pos:start="82:57" pos:end="82:57">|</operator>
+                          <operator pos:start="83:27" pos:end="83:27">(</operator><operator pos:start="83:28" pos:end="83:28">(</operator><name pos:start="83:29" pos:end="83:36">unsigned</name> <name pos:start="83:38" pos:end="83:42">short</name><operator pos:start="83:43" pos:end="83:43">)</operator><name pos:start="83:44" pos:end="83:49"><name pos:start="83:44" pos:end="83:46">buf</name><index pos:start="83:47" pos:end="83:49">[<expr pos:start="83:48" pos:end="83:48"><literal type="number" pos:start="83:48" pos:end="83:48">1</literal></expr>]</index></name><operator pos:start="83:50" pos:end="83:50">)</operator><operator pos:start="83:51" pos:end="83:51">)</operator></expr>;</return>
+</block_content>}</block></function>
+</unit>

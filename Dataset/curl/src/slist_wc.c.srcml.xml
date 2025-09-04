@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/src/slist_wc.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+
+<cpp:include pos:start="25:1" pos:end="25:23">#<cpp:directive pos:start="25:2" pos:end="25:8">include</cpp:directive> <cpp:file pos:start="25:10" pos:end="25:23">"tool_setup.h"</cpp:file></cpp:include>
+
+<cpp:ifndef pos:start="27:1" pos:end="27:35">#<cpp:directive pos:start="27:2" pos:end="27:7">ifndef</cpp:directive> <name pos:start="27:9" pos:end="27:35">CURL_DISABLE_LIBCURL_OPTION</name></cpp:ifndef>
+
+<cpp:include pos:start="29:1" pos:end="29:21">#<cpp:directive pos:start="29:2" pos:end="29:8">include</cpp:directive> <cpp:file pos:start="29:10" pos:end="29:21">"slist_wc.h"</cpp:file></cpp:include>
+
+<comment type="block" pos:start="31:1" pos:end="31:40">/* The last #include files should be: */</comment>
+<cpp:include pos:start="32:1" pos:end="32:21">#<cpp:directive pos:start="32:2" pos:end="32:8">include</cpp:directive> <cpp:file pos:start="32:10" pos:end="32:21">"memdebug.h"</cpp:file></cpp:include>
+
+<comment type="block" pos:start="34:1" pos:end="37:3">/*
+ * slist_wc_append() appends a string to the linked list. This function can be
+ * used as an initialization function as well as an append function.
+ */</comment>
+<function pos:start="38:1" pos:end="62:1"><type pos:start="38:1" pos:end="38:17"><name pos:start="38:1" pos:end="38:15"><name pos:start="38:1" pos:end="38:6">struct</name> <name pos:start="38:8" pos:end="38:15">slist_wc</name></name> <modifier pos:start="38:17" pos:end="38:17">*</modifier></type><name pos:start="38:18" pos:end="38:32">slist_wc_append</name><parameter_list pos:start="38:33" pos:end="39:50">(<parameter pos:start="38:34" pos:end="38:54"><decl pos:start="38:34" pos:end="38:54"><type pos:start="38:34" pos:end="38:54"><name pos:start="38:34" pos:end="38:48"><name pos:start="38:34" pos:end="38:39">struct</name> <name pos:start="38:41" pos:end="38:48">slist_wc</name></name> <modifier pos:start="38:50" pos:end="38:50">*</modifier></type><name pos:start="38:51" pos:end="38:54">list</name></decl></parameter>,
+                                 <parameter pos:start="39:34" pos:end="39:49"><decl pos:start="39:34" pos:end="39:49"><type pos:start="39:34" pos:end="39:49"><specifier pos:start="39:34" pos:end="39:38">const</specifier> <name pos:start="39:40" pos:end="39:43">char</name> <modifier pos:start="39:45" pos:end="39:45">*</modifier></type><name pos:start="39:46" pos:end="39:49">data</name></decl></parameter>)</parameter_list>
+<block pos:start="40:1" pos:end="62:1">{<block_content pos:start="41:3" pos:end="61:14">
+  <decl_stmt pos:start="41:3" pos:end="41:62"><decl pos:start="41:3" pos:end="41:61"><type pos:start="41:3" pos:end="41:21"><name pos:start="41:3" pos:end="41:19"><name pos:start="41:3" pos:end="41:8">struct</name> <name pos:start="41:10" pos:end="41:19">curl_slist</name></name> <modifier pos:start="41:21" pos:end="41:21">*</modifier></type><name pos:start="41:22" pos:end="41:29">new_item</name> <init pos:start="41:31" pos:end="41:61">= <expr pos:start="41:33" pos:end="41:61"><call pos:start="41:33" pos:end="41:61"><name pos:start="41:33" pos:end="41:49">curl_slist_append</name><argument_list pos:start="41:50" pos:end="41:61">(<argument pos:start="41:51" pos:end="41:54"><expr pos:start="41:51" pos:end="41:54"><name pos:start="41:51" pos:end="41:54">NULL</name></expr></argument>, <argument pos:start="41:57" pos:end="41:60"><expr pos:start="41:57" pos:end="41:60"><name pos:start="41:57" pos:end="41:60">data</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+
+  <if_stmt pos:start="43:3" pos:end="44:16"><if pos:start="43:3" pos:end="44:16">if<condition pos:start="43:5" pos:end="43:15">(<expr pos:start="43:6" pos:end="43:14"><operator pos:start="43:6" pos:end="43:6">!</operator><name pos:start="43:7" pos:end="43:14">new_item</name></expr>)</condition><block type="pseudo" pos:start="44:5" pos:end="44:16"><block_content pos:start="44:5" pos:end="44:16">
+    <return pos:start="44:5" pos:end="44:16">return <expr pos:start="44:12" pos:end="44:15"><name pos:start="44:12" pos:end="44:15">NULL</name></expr>;</return></block_content></block></if></if_stmt>
+
+  <if_stmt pos:start="46:3" pos:end="57:3"><if pos:start="46:3" pos:end="57:3">if<condition pos:start="46:5" pos:end="46:11">(<expr pos:start="46:6" pos:end="46:10"><operator pos:start="46:6" pos:end="46:6">!</operator><name pos:start="46:7" pos:end="46:10">list</name></expr>)</condition> <block pos:start="46:13" pos:end="57:3">{<block_content pos:start="47:5" pos:end="56:16">
+    <expr_stmt pos:start="47:5" pos:end="47:43"><expr pos:start="47:5" pos:end="47:42"><name pos:start="47:5" pos:end="47:8">list</name> <operator pos:start="47:10" pos:end="47:10">=</operator> <call pos:start="47:12" pos:end="47:42"><name pos:start="47:12" pos:end="47:17">malloc</name><argument_list pos:start="47:18" pos:end="47:42">(<argument pos:start="47:19" pos:end="47:41"><expr pos:start="47:19" pos:end="47:41"><sizeof pos:start="47:19" pos:end="47:41">sizeof<argument_list pos:start="47:25" pos:end="47:41">(<argument pos:start="47:26" pos:end="47:40"><expr pos:start="47:26" pos:end="47:40">struct <name pos:start="47:33" pos:end="47:40">slist_wc</name></expr></argument>)</argument_list></sizeof></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+    <if_stmt pos:start="49:5" pos:end="52:5"><if pos:start="49:5" pos:end="52:5">if<condition pos:start="49:7" pos:end="49:13">(<expr pos:start="49:8" pos:end="49:12"><operator pos:start="49:8" pos:end="49:8">!</operator><name pos:start="49:9" pos:end="49:12">list</name></expr>)</condition> <block pos:start="49:15" pos:end="52:5">{<block_content pos:start="50:7" pos:end="51:18">
+      <expr_stmt pos:start="50:7" pos:end="50:36"><expr pos:start="50:7" pos:end="50:35"><call pos:start="50:7" pos:end="50:35"><name pos:start="50:7" pos:end="50:25">curl_slist_free_all</name><argument_list pos:start="50:26" pos:end="50:35">(<argument pos:start="50:27" pos:end="50:34"><expr pos:start="50:27" pos:end="50:34"><name pos:start="50:27" pos:end="50:34">new_item</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+      <return pos:start="51:7" pos:end="51:18">return <expr pos:start="51:14" pos:end="51:17"><name pos:start="51:14" pos:end="51:17">NULL</name></expr>;</return>
+    </block_content>}</block></if></if_stmt>
+
+    <expr_stmt pos:start="54:5" pos:end="54:27"><expr pos:start="54:5" pos:end="54:26"><name pos:start="54:5" pos:end="54:15"><name pos:start="54:5" pos:end="54:8">list</name><operator pos:start="54:9" pos:end="54:10">-&gt;</operator><name pos:start="54:11" pos:end="54:15">first</name></name> <operator pos:start="54:17" pos:end="54:17">=</operator> <name pos:start="54:19" pos:end="54:26">new_item</name></expr>;</expr_stmt>
+    <expr_stmt pos:start="55:5" pos:end="55:26"><expr pos:start="55:5" pos:end="55:25"><name pos:start="55:5" pos:end="55:14"><name pos:start="55:5" pos:end="55:8">list</name><operator pos:start="55:9" pos:end="55:10">-&gt;</operator><name pos:start="55:11" pos:end="55:14">last</name></name> <operator pos:start="55:16" pos:end="55:16">=</operator> <name pos:start="55:18" pos:end="55:25">new_item</name></expr>;</expr_stmt>
+    <return pos:start="56:5" pos:end="56:16">return <expr pos:start="56:12" pos:end="56:15"><name pos:start="56:12" pos:end="56:15">list</name></expr>;</return>
+  </block_content>}</block></if></if_stmt>
+
+  <expr_stmt pos:start="59:3" pos:end="59:30"><expr pos:start="59:3" pos:end="59:29"><name pos:start="59:3" pos:end="59:18"><name pos:start="59:3" pos:end="59:6">list</name><operator pos:start="59:7" pos:end="59:8">-&gt;</operator><name pos:start="59:9" pos:end="59:12">last</name><operator pos:start="59:13" pos:end="59:14">-&gt;</operator><name pos:start="59:15" pos:end="59:18">next</name></name> <operator pos:start="59:20" pos:end="59:20">=</operator> <name pos:start="59:22" pos:end="59:29">new_item</name></expr>;</expr_stmt>
+  <expr_stmt pos:start="60:3" pos:end="60:32"><expr pos:start="60:3" pos:end="60:31"><name pos:start="60:3" pos:end="60:12"><name pos:start="60:3" pos:end="60:6">list</name><operator pos:start="60:7" pos:end="60:8">-&gt;</operator><name pos:start="60:9" pos:end="60:12">last</name></name> <operator pos:start="60:14" pos:end="60:14">=</operator> <name pos:start="60:16" pos:end="60:31"><name pos:start="60:16" pos:end="60:19">list</name><operator pos:start="60:20" pos:end="60:21">-&gt;</operator><name pos:start="60:22" pos:end="60:25">last</name><operator pos:start="60:26" pos:end="60:27">-&gt;</operator><name pos:start="60:28" pos:end="60:31">next</name></name></expr>;</expr_stmt>
+  <return pos:start="61:3" pos:end="61:14">return <expr pos:start="61:10" pos:end="61:13"><name pos:start="61:10" pos:end="61:13">list</name></expr>;</return>
+</block_content>}</block></function>
+
+<comment type="block" pos:start="64:1" pos:end="64:36">/* be nice and clean up resources */</comment>
+<function pos:start="65:1" pos:end="75:0"><type pos:start="65:1" pos:end="65:4"><name pos:start="65:1" pos:end="65:4">void</name></type> <name pos:start="65:6" pos:end="65:22">slist_wc_free_all</name><parameter_list pos:start="65:23" pos:end="65:45">(<parameter pos:start="65:24" pos:end="65:44"><decl pos:start="65:24" pos:end="65:44"><type pos:start="65:24" pos:end="65:44"><name pos:start="65:24" pos:end="65:38"><name pos:start="65:24" pos:end="65:29">struct</name> <name pos:start="65:31" pos:end="65:38">slist_wc</name></name> <modifier pos:start="65:40" pos:end="65:40">*</modifier></type><name pos:start="65:41" pos:end="65:44">list</name></decl></parameter>)</parameter_list>
+<block pos:start="66:1" pos:end="75:0">{<block_content pos:start="67:3" pos:end="71:13">
+  <if_stmt pos:start="67:3" pos:end="68:11"><if pos:start="67:3" pos:end="68:11">if<condition pos:start="67:5" pos:end="67:11">(<expr pos:start="67:6" pos:end="67:10"><operator pos:start="67:6" pos:end="67:6">!</operator><name pos:start="67:7" pos:end="67:10">list</name></expr>)</condition><block type="pseudo" pos:start="68:5" pos:end="68:11"><block_content pos:start="68:5" pos:end="68:11">
+    <return pos:start="68:5" pos:end="68:11">return;</return></block_content></block></if></if_stmt>
+
+  <expr_stmt pos:start="70:3" pos:end="70:35"><expr pos:start="70:3" pos:end="70:34"><call pos:start="70:3" pos:end="70:34"><name pos:start="70:3" pos:end="70:21">curl_slist_free_all</name><argument_list pos:start="70:22" pos:end="70:34">(<argument pos:start="70:23" pos:end="70:33"><expr pos:start="70:23" pos:end="70:33"><name pos:start="70:23" pos:end="70:33"><name pos:start="70:23" pos:end="70:26">list</name><operator pos:start="70:27" pos:end="70:28">-&gt;</operator><name pos:start="70:29" pos:end="70:33">first</name></name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  <expr_stmt pos:start="71:3" pos:end="71:13"><expr pos:start="71:3" pos:end="71:12"><call pos:start="71:3" pos:end="71:12"><name pos:start="71:3" pos:end="71:6">free</name><argument_list pos:start="71:7" pos:end="71:12">(<argument pos:start="71:8" pos:end="71:11"><expr pos:start="71:8" pos:end="71:11"><name pos:start="71:8" pos:end="71:11">list</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+</block_content>}</block></function>
+
+<cpp:endif pos:start="74:1" pos:end="74:6">#<cpp:directive pos:start="74:2" pos:end="74:6">endif</cpp:directive></cpp:endif> <comment type="block" pos:start="74:8" pos:end="74:40">/* CURL_DISABLE_LIBCURL_OPTION */</comment>
+</unit>

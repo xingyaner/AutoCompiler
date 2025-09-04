@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<unit xmlns="http://www.srcML.org/srcML/src" xmlns:cpp="http://www.srcML.org/srcML/cpp" xmlns:pos="http://www.srcML.org/srcML/position" revision="1.0.0" language="C" filename="/data/shangxw/BinLLM/evaluate/eval_proj/curl/lib/strdup.c" pos:tabs="8"><comment type="block" format="doxygen" pos:start="1:1" pos:end="23:77">/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ &lt;| |___
+ *                             \___|\___/|_| \_\_____|
+ *
+ * Copyright (C) Daniel Stenberg, &lt;daniel@haxx.se&gt;, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/</comment>
+
+<cpp:include pos:start="25:1" pos:end="25:23">#<cpp:directive pos:start="25:2" pos:end="25:8">include</cpp:directive> <cpp:file pos:start="25:10" pos:end="25:23">"curl_setup.h"</cpp:file></cpp:include>
+
+<cpp:include pos:start="27:1" pos:end="27:22">#<cpp:directive pos:start="27:2" pos:end="27:8">include</cpp:directive> <cpp:file pos:start="27:10" pos:end="27:22">&lt;curl/curl.h&gt;</cpp:file></cpp:include>
+
+<cpp:ifdef pos:start="29:1" pos:end="29:13">#<cpp:directive pos:start="29:2" pos:end="29:6">ifdef</cpp:directive> <name pos:start="29:8" pos:end="29:13">_WIN32</name></cpp:ifdef>
+<cpp:include pos:start="30:1" pos:end="30:18">#<cpp:directive pos:start="30:2" pos:end="30:8">include</cpp:directive> <cpp:file pos:start="30:10" pos:end="30:18">&lt;wchar.h&gt;</cpp:file></cpp:include>
+<cpp:endif pos:start="31:1" pos:end="31:6">#<cpp:directive pos:start="31:2" pos:end="31:6">endif</cpp:directive></cpp:endif>
+
+<cpp:include pos:start="33:1" pos:end="33:19">#<cpp:directive pos:start="33:2" pos:end="33:8">include</cpp:directive> <cpp:file pos:start="33:10" pos:end="33:19">"strdup.h"</cpp:file></cpp:include>
+<cpp:include pos:start="34:1" pos:end="34:24">#<cpp:directive pos:start="34:2" pos:end="34:8">include</cpp:directive> <cpp:file pos:start="34:10" pos:end="34:24">"curl_memory.h"</cpp:file></cpp:include>
+
+<comment type="block" pos:start="36:1" pos:end="36:39">/* The last #include file should be: */</comment>
+<cpp:include pos:start="37:1" pos:end="37:21">#<cpp:directive pos:start="37:2" pos:end="37:8">include</cpp:directive> <cpp:file pos:start="37:10" pos:end="37:21">"memdebug.h"</cpp:file></cpp:include>
+
+<cpp:ifndef pos:start="39:1" pos:end="39:19">#<cpp:directive pos:start="39:2" pos:end="39:7">ifndef</cpp:directive> <name pos:start="39:9" pos:end="39:19">HAVE_STRDUP</name></cpp:ifndef>
+<function pos:start="40:1" pos:end="60:0"><type pos:start="40:1" pos:end="40:6"><name pos:start="40:1" pos:end="40:4">char</name> <modifier pos:start="40:6" pos:end="40:6">*</modifier></type><name pos:start="40:7" pos:end="40:17">Curl_strdup</name><parameter_list pos:start="40:18" pos:end="40:34">(<parameter pos:start="40:19" pos:end="40:33"><decl pos:start="40:19" pos:end="40:33"><type pos:start="40:19" pos:end="40:30"><specifier pos:start="40:19" pos:end="40:23">const</specifier> <name pos:start="40:25" pos:end="40:28">char</name> <modifier pos:start="40:30" pos:end="40:30">*</modifier></type><name pos:start="40:31" pos:end="40:33">str</name></decl></parameter>)</parameter_list>
+<block pos:start="41:1" pos:end="60:0">{<block_content pos:start="42:3" pos:end="55:16">
+  <decl_stmt pos:start="42:3" pos:end="42:13"><decl pos:start="42:3" pos:end="42:12"><type pos:start="42:3" pos:end="42:8"><name pos:start="42:3" pos:end="42:8">size_t</name></type> <name pos:start="42:10" pos:end="42:12">len</name></decl>;</decl_stmt>
+  <decl_stmt pos:start="43:3" pos:end="43:15"><decl pos:start="43:3" pos:end="43:14"><type pos:start="43:3" pos:end="43:8"><name pos:start="43:3" pos:end="43:6">char</name> <modifier pos:start="43:8" pos:end="43:8">*</modifier></type><name pos:start="43:9" pos:end="43:14">newstr</name></decl>;</decl_stmt>
+
+  <if_stmt pos:start="45:3" pos:end="46:24"><if pos:start="45:3" pos:end="46:24">if<condition pos:start="45:5" pos:end="45:10">(<expr pos:start="45:6" pos:end="45:9"><operator pos:start="45:6" pos:end="45:6">!</operator><name pos:start="45:7" pos:end="45:9">str</name></expr>)</condition><block type="pseudo" pos:start="46:5" pos:end="46:24"><block_content pos:start="46:5" pos:end="46:24">
+    <return pos:start="46:5" pos:end="46:24">return <expr pos:start="46:12" pos:end="46:23"><operator pos:start="46:12" pos:end="46:12">(</operator><name pos:start="46:13" pos:end="46:16">char</name> <operator pos:start="46:18" pos:end="46:18">*</operator><operator pos:start="46:19" pos:end="46:19">)</operator><name pos:start="46:20" pos:end="46:23">NULL</name></expr>;</return></block_content></block></if></if_stmt>
+
+  <expr_stmt pos:start="48:3" pos:end="48:24"><expr pos:start="48:3" pos:end="48:23"><name pos:start="48:3" pos:end="48:5">len</name> <operator pos:start="48:7" pos:end="48:7">=</operator> <call pos:start="48:9" pos:end="48:19"><name pos:start="48:9" pos:end="48:14">strlen</name><argument_list pos:start="48:15" pos:end="48:19">(<argument pos:start="48:16" pos:end="48:18"><expr pos:start="48:16" pos:end="48:18"><name pos:start="48:16" pos:end="48:18">str</name></expr></argument>)</argument_list></call> <operator pos:start="48:21" pos:end="48:21">+</operator> <literal type="number" pos:start="48:23" pos:end="48:23">1</literal></expr>;</expr_stmt>
+
+  <expr_stmt pos:start="50:3" pos:end="50:23"><expr pos:start="50:3" pos:end="50:22"><name pos:start="50:3" pos:end="50:8">newstr</name> <operator pos:start="50:10" pos:end="50:10">=</operator> <call pos:start="50:12" pos:end="50:22"><name pos:start="50:12" pos:end="50:17">malloc</name><argument_list pos:start="50:18" pos:end="50:22">(<argument pos:start="50:19" pos:end="50:21"><expr pos:start="50:19" pos:end="50:21"><name pos:start="50:19" pos:end="50:21">len</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  <if_stmt pos:start="51:3" pos:end="52:24"><if pos:start="51:3" pos:end="52:24">if<condition pos:start="51:5" pos:end="51:13">(<expr pos:start="51:6" pos:end="51:12"><operator pos:start="51:6" pos:end="51:6">!</operator><name pos:start="51:7" pos:end="51:12">newstr</name></expr>)</condition><block type="pseudo" pos:start="52:5" pos:end="52:24"><block_content pos:start="52:5" pos:end="52:24">
+    <return pos:start="52:5" pos:end="52:24">return <expr pos:start="52:12" pos:end="52:23"><operator pos:start="52:12" pos:end="52:12">(</operator><name pos:start="52:13" pos:end="52:16">char</name> <operator pos:start="52:18" pos:end="52:18">*</operator><operator pos:start="52:19" pos:end="52:19">)</operator><name pos:start="52:20" pos:end="52:23">NULL</name></expr>;</return></block_content></block></if></if_stmt>
+
+  <expr_stmt pos:start="54:3" pos:end="54:27"><expr pos:start="54:3" pos:end="54:26"><call pos:start="54:3" pos:end="54:26"><name pos:start="54:3" pos:end="54:8">memcpy</name><argument_list pos:start="54:9" pos:end="54:26">(<argument pos:start="54:10" pos:end="54:15"><expr pos:start="54:10" pos:end="54:15"><name pos:start="54:10" pos:end="54:15">newstr</name></expr></argument>, <argument pos:start="54:18" pos:end="54:20"><expr pos:start="54:18" pos:end="54:20"><name pos:start="54:18" pos:end="54:20">str</name></expr></argument>, <argument pos:start="54:23" pos:end="54:25"><expr pos:start="54:23" pos:end="54:25"><name pos:start="54:23" pos:end="54:25">len</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  <return pos:start="55:3" pos:end="55:16">return <expr pos:start="55:10" pos:end="55:15"><name pos:start="55:10" pos:end="55:15">newstr</name></expr>;</return>
+</block_content>}</block></function>
+<cpp:endif pos:start="57:1" pos:end="57:6">#<cpp:directive pos:start="57:2" pos:end="57:6">endif</cpp:directive></cpp:endif>
+
+<cpp:ifdef pos:start="59:1" pos:end="59:13">#<cpp:directive pos:start="59:2" pos:end="59:6">ifdef</cpp:directive> <name pos:start="59:8" pos:end="59:13">_WIN32</name></cpp:ifdef>
+<comment type="block" format="doxygen" pos:start="60:1" pos:end="69:77">/***************************************************************************
+ *
+ * Curl_wcsdup(source)
+ *
+ * Copies the 'source' wchar string to a newly allocated buffer (that is
+ * returned).
+ *
+ * Returns the new pointer or NULL on failure.
+ *
+ ***************************************************************************/</comment>
+<function pos:start="70:1" pos:end="80:0"><type pos:start="70:1" pos:end="70:9"><name pos:start="70:1" pos:end="70:7">wchar_t</name> <modifier pos:start="70:9" pos:end="70:9">*</modifier></type><name pos:start="70:10" pos:end="70:20">Curl_wcsdup</name><parameter_list pos:start="70:21" pos:end="70:40">(<parameter pos:start="70:22" pos:end="70:39"><decl pos:start="70:22" pos:end="70:39"><type pos:start="70:22" pos:end="70:36"><specifier pos:start="70:22" pos:end="70:26">const</specifier> <name pos:start="70:28" pos:end="70:34">wchar_t</name> <modifier pos:start="70:36" pos:end="70:36">*</modifier></type><name pos:start="70:37" pos:end="70:39">src</name></decl></parameter>)</parameter_list>
+<block pos:start="71:1" pos:end="80:0">{<block_content pos:start="72:3" pos:end="77:69">
+  <decl_stmt pos:start="72:3" pos:end="72:30"><decl pos:start="72:3" pos:end="72:29"><type pos:start="72:3" pos:end="72:8"><name pos:start="72:3" pos:end="72:8">size_t</name></type> <name pos:start="72:10" pos:end="72:15">length</name> <init pos:start="72:17" pos:end="72:29">= <expr pos:start="72:19" pos:end="72:29"><call pos:start="72:19" pos:end="72:29"><name pos:start="72:19" pos:end="72:24">wcslen</name><argument_list pos:start="72:25" pos:end="72:29">(<argument pos:start="72:26" pos:end="72:28"><expr pos:start="72:26" pos:end="72:28"><name pos:start="72:26" pos:end="72:28">src</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+
+  <if_stmt pos:start="74:3" pos:end="75:27"><if pos:start="74:3" pos:end="75:27">if<condition pos:start="74:5" pos:end="74:49">(<expr pos:start="74:6" pos:end="74:48"><name pos:start="74:6" pos:end="74:11">length</name> <operator pos:start="74:13" pos:end="74:13">&gt;</operator> <operator pos:start="74:15" pos:end="74:15">(</operator><name pos:start="74:16" pos:end="74:25">SIZE_T_MAX</name> <operator pos:start="74:27" pos:end="74:27">/</operator> <sizeof pos:start="74:29" pos:end="74:43">sizeof<argument_list pos:start="74:35" pos:end="74:43">(<argument pos:start="74:36" pos:end="74:42"><expr pos:start="74:36" pos:end="74:42"><name pos:start="74:36" pos:end="74:42">wchar_t</name></expr></argument>)</argument_list></sizeof><operator pos:start="74:44" pos:end="74:44">)</operator> <operator pos:start="74:46" pos:end="74:46">-</operator> <literal type="number" pos:start="74:48" pos:end="74:48">1</literal></expr>)</condition><block type="pseudo" pos:start="75:5" pos:end="75:27"><block_content pos:start="75:5" pos:end="75:27">
+    <return pos:start="75:5" pos:end="75:27">return <expr pos:start="75:12" pos:end="75:26"><operator pos:start="75:12" pos:end="75:12">(</operator><name pos:start="75:13" pos:end="75:19">wchar_t</name> <operator pos:start="75:21" pos:end="75:21">*</operator><operator pos:start="75:22" pos:end="75:22">)</operator><name pos:start="75:23" pos:end="75:26">NULL</name></expr>;</return></block_content></block></if></if_stmt> <comment type="block" pos:start="75:29" pos:end="75:50">/* integer overflow */</comment>
+
+  <return pos:start="77:3" pos:end="77:69">return <expr pos:start="77:10" pos:end="77:68"><operator pos:start="77:10" pos:end="77:10">(</operator><name pos:start="77:11" pos:end="77:17">wchar_t</name> <operator pos:start="77:19" pos:end="77:19">*</operator><operator pos:start="77:20" pos:end="77:20">)</operator><call pos:start="77:21" pos:end="77:68"><name pos:start="77:21" pos:end="77:31">Curl_memdup</name><argument_list pos:start="77:32" pos:end="77:68">(<argument pos:start="77:33" pos:end="77:35"><expr pos:start="77:33" pos:end="77:35"><name pos:start="77:33" pos:end="77:35">src</name></expr></argument>, <argument pos:start="77:38" pos:end="77:67"><expr pos:start="77:38" pos:end="77:67"><operator pos:start="77:38" pos:end="77:38">(</operator><name pos:start="77:39" pos:end="77:44">length</name> <operator pos:start="77:46" pos:end="77:46">+</operator> <literal type="number" pos:start="77:48" pos:end="77:48">1</literal><operator pos:start="77:49" pos:end="77:49">)</operator> <operator pos:start="77:51" pos:end="77:51">*</operator> <sizeof pos:start="77:53" pos:end="77:67">sizeof<argument_list pos:start="77:59" pos:end="77:67">(<argument pos:start="77:60" pos:end="77:66"><expr pos:start="77:60" pos:end="77:66"><name pos:start="77:60" pos:end="77:66">wchar_t</name></expr></argument>)</argument_list></sizeof></expr></argument>)</argument_list></call></expr>;</return>
+</block_content>}</block></function>
+<cpp:endif pos:start="79:1" pos:end="79:6">#<cpp:directive pos:start="79:2" pos:end="79:6">endif</cpp:directive></cpp:endif>
+
+<comment type="block" format="doxygen" pos:start="81:1" pos:end="90:77">/***************************************************************************
+ *
+ * Curl_memdup(source, length)
+ *
+ * Copies the 'source' data to a newly allocated buffer (that is
+ * returned). Copies 'length' bytes.
+ *
+ * Returns the new pointer or NULL on failure.
+ *
+ ***************************************************************************/</comment>
+<function pos:start="91:1" pos:end="100:1"><type pos:start="91:1" pos:end="91:6"><name pos:start="91:1" pos:end="91:4">void</name> <modifier pos:start="91:6" pos:end="91:6">*</modifier></type><name pos:start="91:7" pos:end="91:17">Curl_memdup</name><parameter_list pos:start="91:18" pos:end="91:49">(<parameter pos:start="91:19" pos:end="91:33"><decl pos:start="91:19" pos:end="91:33"><type pos:start="91:19" pos:end="91:33"><specifier pos:start="91:19" pos:end="91:23">const</specifier> <name pos:start="91:25" pos:end="91:28">void</name> <modifier pos:start="91:30" pos:end="91:30">*</modifier></type><name pos:start="91:31" pos:end="91:33">src</name></decl></parameter>, <parameter pos:start="91:36" pos:end="91:48"><decl pos:start="91:36" pos:end="91:48"><type pos:start="91:36" pos:end="91:48"><name pos:start="91:36" pos:end="91:41">size_t</name></type> <name pos:start="91:43" pos:end="91:48">length</name></decl></parameter>)</parameter_list>
+<block pos:start="92:1" pos:end="100:1">{<block_content pos:start="93:3" pos:end="99:16">
+  <decl_stmt pos:start="93:3" pos:end="93:32"><decl pos:start="93:3" pos:end="93:31"><type pos:start="93:3" pos:end="93:8"><name pos:start="93:3" pos:end="93:6">void</name> <modifier pos:start="93:8" pos:end="93:8">*</modifier></type><name pos:start="93:9" pos:end="93:14">buffer</name> <init pos:start="93:16" pos:end="93:31">= <expr pos:start="93:18" pos:end="93:31"><call pos:start="93:18" pos:end="93:31"><name pos:start="93:18" pos:end="93:23">malloc</name><argument_list pos:start="93:24" pos:end="93:31">(<argument pos:start="93:25" pos:end="93:30"><expr pos:start="93:25" pos:end="93:30"><name pos:start="93:25" pos:end="93:30">length</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+  <if_stmt pos:start="94:3" pos:end="95:16"><if pos:start="94:3" pos:end="95:16">if<condition pos:start="94:5" pos:end="94:13">(<expr pos:start="94:6" pos:end="94:12"><operator pos:start="94:6" pos:end="94:6">!</operator><name pos:start="94:7" pos:end="94:12">buffer</name></expr>)</condition><block type="pseudo" pos:start="95:5" pos:end="95:16"><block_content pos:start="95:5" pos:end="95:16">
+    <return pos:start="95:5" pos:end="95:16">return <expr pos:start="95:12" pos:end="95:15"><name pos:start="95:12" pos:end="95:15">NULL</name></expr>;</return></block_content></block></if></if_stmt> <comment type="block" pos:start="95:18" pos:end="95:27">/* fail */</comment>
+
+  <expr_stmt pos:start="97:3" pos:end="97:30"><expr pos:start="97:3" pos:end="97:29"><call pos:start="97:3" pos:end="97:29"><name pos:start="97:3" pos:end="97:8">memcpy</name><argument_list pos:start="97:9" pos:end="97:29">(<argument pos:start="97:10" pos:end="97:15"><expr pos:start="97:10" pos:end="97:15"><name pos:start="97:10" pos:end="97:15">buffer</name></expr></argument>, <argument pos:start="97:18" pos:end="97:20"><expr pos:start="97:18" pos:end="97:20"><name pos:start="97:18" pos:end="97:20">src</name></expr></argument>, <argument pos:start="97:23" pos:end="97:28"><expr pos:start="97:23" pos:end="97:28"><name pos:start="97:23" pos:end="97:28">length</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+
+  <return pos:start="99:3" pos:end="99:16">return <expr pos:start="99:10" pos:end="99:15"><name pos:start="99:10" pos:end="99:15">buffer</name></expr>;</return>
+</block_content>}</block></function>
+
+<comment type="block" format="doxygen" pos:start="102:1" pos:end="111:77">/***************************************************************************
+ *
+ * Curl_memdup0(source, length)
+ *
+ * Copies the 'source' string to a newly allocated buffer (that is returned).
+ * Copies 'length' bytes then adds a null terminator.
+ *
+ * Returns the new pointer or NULL on failure.
+ *
+ ***************************************************************************/</comment>
+<function pos:start="112:1" pos:end="120:1"><type pos:start="112:1" pos:end="112:6"><name pos:start="112:1" pos:end="112:4">void</name> <modifier pos:start="112:6" pos:end="112:6">*</modifier></type><name pos:start="112:7" pos:end="112:18">Curl_memdup0</name><parameter_list pos:start="112:19" pos:end="112:50">(<parameter pos:start="112:20" pos:end="112:34"><decl pos:start="112:20" pos:end="112:34"><type pos:start="112:20" pos:end="112:34"><specifier pos:start="112:20" pos:end="112:24">const</specifier> <name pos:start="112:26" pos:end="112:29">char</name> <modifier pos:start="112:31" pos:end="112:31">*</modifier></type><name pos:start="112:32" pos:end="112:34">src</name></decl></parameter>, <parameter pos:start="112:37" pos:end="112:49"><decl pos:start="112:37" pos:end="112:49"><type pos:start="112:37" pos:end="112:49"><name pos:start="112:37" pos:end="112:42">size_t</name></type> <name pos:start="112:44" pos:end="112:49">length</name></decl></parameter>)</parameter_list>
+<block pos:start="113:1" pos:end="120:1">{<block_content pos:start="114:3" pos:end="119:13">
+  <decl_stmt pos:start="114:3" pos:end="114:33"><decl pos:start="114:3" pos:end="114:32"><type pos:start="114:3" pos:end="114:8"><name pos:start="114:3" pos:end="114:6">char</name> <modifier pos:start="114:8" pos:end="114:8">*</modifier></type><name pos:start="114:9" pos:end="114:11">buf</name> <init pos:start="114:13" pos:end="114:32">= <expr pos:start="114:15" pos:end="114:32"><call pos:start="114:15" pos:end="114:32"><name pos:start="114:15" pos:end="114:20">malloc</name><argument_list pos:start="114:21" pos:end="114:32">(<argument pos:start="114:22" pos:end="114:31"><expr pos:start="114:22" pos:end="114:31"><name pos:start="114:22" pos:end="114:27">length</name> <operator pos:start="114:29" pos:end="114:29">+</operator> <literal type="number" pos:start="114:31" pos:end="114:31">1</literal></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+  <if_stmt pos:start="115:3" pos:end="116:16"><if pos:start="115:3" pos:end="116:16">if<condition pos:start="115:5" pos:end="115:10">(<expr pos:start="115:6" pos:end="115:9"><operator pos:start="115:6" pos:end="115:6">!</operator><name pos:start="115:7" pos:end="115:9">buf</name></expr>)</condition><block type="pseudo" pos:start="116:5" pos:end="116:16"><block_content pos:start="116:5" pos:end="116:16">
+    <return pos:start="116:5" pos:end="116:16">return <expr pos:start="116:12" pos:end="116:15"><name pos:start="116:12" pos:end="116:15">NULL</name></expr>;</return></block_content></block></if></if_stmt>
+  <expr_stmt pos:start="117:3" pos:end="117:27"><expr pos:start="117:3" pos:end="117:26"><call pos:start="117:3" pos:end="117:26"><name pos:start="117:3" pos:end="117:8">memcpy</name><argument_list pos:start="117:9" pos:end="117:26">(<argument pos:start="117:10" pos:end="117:12"><expr pos:start="117:10" pos:end="117:12"><name pos:start="117:10" pos:end="117:12">buf</name></expr></argument>, <argument pos:start="117:15" pos:end="117:17"><expr pos:start="117:15" pos:end="117:17"><name pos:start="117:15" pos:end="117:17">src</name></expr></argument>, <argument pos:start="117:20" pos:end="117:25"><expr pos:start="117:20" pos:end="117:25"><name pos:start="117:20" pos:end="117:25">length</name></expr></argument>)</argument_list></call></expr>;</expr_stmt>
+  <expr_stmt pos:start="118:3" pos:end="118:18"><expr pos:start="118:3" pos:end="118:17"><name pos:start="118:3" pos:end="118:13"><name pos:start="118:3" pos:end="118:5">buf</name><index pos:start="118:6" pos:end="118:13">[<expr pos:start="118:7" pos:end="118:12"><name pos:start="118:7" pos:end="118:12">length</name></expr>]</index></name> <operator pos:start="118:15" pos:end="118:15">=</operator> <literal type="number" pos:start="118:17" pos:end="118:17">0</literal></expr>;</expr_stmt>
+  <return pos:start="119:3" pos:end="119:13">return <expr pos:start="119:10" pos:end="119:12"><name pos:start="119:10" pos:end="119:12">buf</name></expr>;</return>
+</block_content>}</block></function>
+
+<comment type="block" format="doxygen" pos:start="122:1" pos:end="135:77">/***************************************************************************
+ *
+ * Curl_saferealloc(ptr, size)
+ *
+ * Does a normal realloc(), but will free the data pointer if the realloc
+ * fails. If 'size' is non-zero, it will free the data and return a failure.
+ *
+ * This convenience function is provided and used to help us avoid a common
+ * mistake pattern when we could pass in a zero, catch the NULL return and end
+ * up free'ing the memory twice.
+ *
+ * Returns the new pointer or NULL on failure.
+ *
+ ***************************************************************************/</comment>
+<function pos:start="136:1" pos:end="143:1"><type pos:start="136:1" pos:end="136:6"><name pos:start="136:1" pos:end="136:4">void</name> <modifier pos:start="136:6" pos:end="136:6">*</modifier></type><name pos:start="136:7" pos:end="136:22">Curl_saferealloc</name><parameter_list pos:start="136:23" pos:end="136:46">(<parameter pos:start="136:24" pos:end="136:32"><decl pos:start="136:24" pos:end="136:32"><type pos:start="136:24" pos:end="136:32"><name pos:start="136:24" pos:end="136:27">void</name> <modifier pos:start="136:29" pos:end="136:29">*</modifier></type><name pos:start="136:30" pos:end="136:32">ptr</name></decl></parameter>, <parameter pos:start="136:35" pos:end="136:45"><decl pos:start="136:35" pos:end="136:45"><type pos:start="136:35" pos:end="136:45"><name pos:start="136:35" pos:end="136:40">size_t</name></type> <name pos:start="136:42" pos:end="136:45">size</name></decl></parameter>)</parameter_list>
+<block pos:start="137:1" pos:end="143:1">{<block_content pos:start="138:3" pos:end="142:15">
+  <decl_stmt pos:start="138:3" pos:end="138:35"><decl pos:start="138:3" pos:end="138:34"><type pos:start="138:3" pos:end="138:8"><name pos:start="138:3" pos:end="138:6">void</name> <modifier pos:start="138:8" pos:end="138:8">*</modifier></type><name pos:start="138:9" pos:end="138:13">datap</name> <init pos:start="138:15" pos:end="138:34">= <expr pos:start="138:17" pos:end="138:34"><call pos:start="138:17" pos:end="138:34"><name pos:start="138:17" pos:end="138:23">realloc</name><argument_list pos:start="138:24" pos:end="138:34">(<argument pos:start="138:25" pos:end="138:27"><expr pos:start="138:25" pos:end="138:27"><name pos:start="138:25" pos:end="138:27">ptr</name></expr></argument>, <argument pos:start="138:30" pos:end="138:33"><expr pos:start="138:30" pos:end="138:33"><name pos:start="138:30" pos:end="138:33">size</name></expr></argument>)</argument_list></call></expr></init></decl>;</decl_stmt>
+  <if_stmt pos:start="139:3" pos:end="141:14"><if pos:start="139:3" pos:end="141:14">if<condition pos:start="139:5" pos:end="139:20">(<expr pos:start="139:6" pos:end="139:19"><name pos:start="139:6" pos:end="139:9">size</name> <operator pos:start="139:11" pos:end="139:12">&amp;&amp;</operator> <operator pos:start="139:14" pos:end="139:14">!</operator><name pos:start="139:15" pos:end="139:19">datap</name></expr>)</condition><block type="pseudo" pos:start="141:5" pos:end="141:14"><block_content pos:start="141:5" pos:end="141:14">
+    <comment type="block" pos:start="140:5" pos:end="140:46">/* only free 'ptr' if size was non-zero */</comment>
+    <expr_stmt pos:start="141:5" pos:end="141:14"><expr pos:start="141:5" pos:end="141:13"><call pos:start="141:5" pos:end="141:13"><name pos:start="141:5" pos:end="141:8">free</name><argument_list pos:start="141:9" pos:end="141:13">(<argument pos:start="141:10" pos:end="141:12"><expr pos:start="141:10" pos:end="141:12"><name pos:start="141:10" pos:end="141:12">ptr</name></expr></argument>)</argument_list></call></expr>;</expr_stmt></block_content></block></if></if_stmt>
+  <return pos:start="142:3" pos:end="142:15">return <expr pos:start="142:10" pos:end="142:14"><name pos:start="142:10" pos:end="142:14">datap</name></expr>;</return>
+</block_content>}</block></function>
+</unit>
