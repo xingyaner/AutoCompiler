@@ -1,0 +1,14 @@
+- project: freerdp
+  language: c
+  error_time: '2025-09-26'
+  last_success_time: ''
+  oss-fuzz_sha: d175027c3507ae9a8a0a624aa00f731945047fd4
+  fuzzing_build_error_log: https://oss-fuzz-build-logs.storage.googleapis.com/log-6f4d5536-2503-4583-afbd-f32fe08c4759.txt
+  software_repo_url: https://github.com/FreeRDP/FreeRDP.git
+  software_sha: f070c87d7583845a6f06b776f51a4f5044c706ac
+  engine: afl
+  sanitizer: address
+  architecture: x86_64
+  base_image_digest: fff6dfd3cd34356d1f99d47aff87c24db5706c229c8bc67726d330bd29881ee8
+  error_category: RC13
+  fixed_state: 'no'

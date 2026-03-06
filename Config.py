@@ -1,3 +1,7 @@
+# ========================== Config.py 完整版 ==========================
+# Config.py 顶部添加
+GLOBAL_PROXY = None  # 如果需要代理，改为 'socks5://127.0.0.1:29999'
+
 # langsmith config
 LANGCHAIN_TRACING_V2=""
 LANGCHAIN_PROJECT=""
@@ -8,20 +12,20 @@ LOG_URL_TEMPLATE=""
 
 ## Multi-Agent Discussion
 # openai
-OPENAI_BASE_URL=""
-OPENAI_MODEL=""
-OPENAI_EMBEDDING_MODEL=""
-OPENAI_API_KEY="" 
+OPENAI_BASE_URL="https://xingjiabiapi.org/v1"
+OPENAI_MODEL="gpt-5.1"
+OPENAI_EMBEDDING_MODEL="text-embedding-3-large"
+OPENAI_API_KEY="sk-" 
 
 # claude
-ANTHROPIC_BASE_URL=""
-ANTHROPIC_MODEL=""
-ANTHROPIC_API_KEY=""
+ANTHROPIC_BASE_URL="https://xingjiabiapi.org/v1"
+ANTHROPIC_MODEL="claude-opus-4-5-20251101-thinking"
+ANTHROPIC_API_KEY="sk-"
 
 # deepseek (MasterAgent and MultiAgentDiscussion)
-DEEPSEEK_BASE_URL=""
-DEEPSEEK_MODEL=""
-DEEPSEEK_API_KEY=""
+DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
+DEEPSEEK_MODEL="deepseek-chat"
+DEEPSEEK_API_KEY="sk-"
 
 PROXY=""
 PASSWORD=""
@@ -57,17 +61,24 @@ Question: {input}
 Thought:{agent_scratchpad}"""
 
 
-model_decision_template = """I want you to help me compile the project {project_name} from source code. Please complete the compilation task step by step.
+# 恢复为原始自主决策模式提示词
+model_decision_template = """I want you to help me fix the build error for project {project_name}.
 
-The project has been downloaded into /work/, which is also the Shell's initial path.
-You should follow these rules:
-1. Use the Shell tool to execute any command for compilation, and it is recommended to use `tree . -L 2` command to show the project structure.
-2. Use the CompileNavigator tool to looking for compilation instructions. Try to avoid reading documents in Shell tool, unless you think it's necessary.
-3. If there are any difficulties during compilation, try to break them without calling tools.
+FACTS ABOUT THE ENVIRONMENT:
+1. This project is integrated into the OSS-Fuzz infrastructure.
+2. The build configs are in `/oss-fuzz/projects/{project_name}/`.
+3. The project source code is in `/work/`.
+4. THE ORIGINAL BUILD ERROR LOG IS AT: `/work/fuzz_build_log.txt`. 
+5. Build command: `python3 /oss-fuzz/infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 espeak-ng`.
+
+RULES:
+1. You may use Shell and CompileNavigator to read any files in the above paths to understand the build logic.
+2. STRICT VERSION LOCK: Do not attempt to pull latest code or change branches.
+3. You must modify the source code or build scripts within the provided paths to fix the build errors.
 4. Unless you encounter a problem that you cannot solve, there is no need to call the ErrorSolver tool.
-5. No need to install this project or test it, just compile it.
-6. Compilation target should be the main body of the project, for example, the executable programs for a tool-type project or the shared/static libraries for a library project.
-7. When you've done your best, you need to check if the project actually compiled successfully and output COMPILATION-SUCCESS, COMPILATION-FAIL, or COMPILATION-UNCERTAIN as the final answer.
+5. When done, output COMPILATION-SUCCESS or COMPILATION-FAIL.
+
+NOTICE: The error log is at `/work/fuzz_build_log.txt`.
 """
 
 discussion_template1="""You are an experienced compiler troubleshooting expert. Your task is to analyze provided error messages, identify likely causes, and deliver specific solutions. 

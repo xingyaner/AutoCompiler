@@ -21,7 +21,14 @@ from Config import *
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-file_handler = logging.FileHandler('test/MultiAgentDiscussion.log',mode='a')
+# 确保日志目录存在
+log_dir = 'test'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+
+# 初始化 FileHandler
+log_file_path = os.path.join(log_dir, 'MultiAgentDiscussion.log')
+file_handler = logging.FileHandler(log_file_path, mode='a')
 file_handler.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s %(name)s:%(levelname)s:%(message)s")
 file_handler.setFormatter(formatter)
@@ -162,7 +169,8 @@ class SingleAgent:
             base_url=self.base_url,
             model=self.model_name,
             api_key=self.api_key,
-            temperature=1
+            temperature=1,
+            timeout=300,
         )
         prompt = prompt.partial(
             tools=render_text_description(tools)
@@ -276,4 +284,8 @@ class ErrorSolver:
             return all_results[0][f'weighted_max_{rounds}']
         
         except Exception as e:
-            return None
+            # 【关键修改】在此处打印具体错误
+            logging.error(f"!!! ErrorSolver CRASHED: {str(e)}")
+            import traceback
+            logging.error(traceback.format_exc())
+            return f"Error during discussion: {str(e)}" # 返回给 MasterAgent，让它知道讨论失败了

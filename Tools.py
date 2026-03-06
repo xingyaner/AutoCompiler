@@ -28,156 +28,145 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from ipdb import set_trace as bp
-
+# 正确的导入方式
+from langchain_chroma import Chroma
 from Config import *
+
 
 class InteractiveDockerShell:
     HOSTNAME = 'c0mpi1er-c0nta1ner'
-    def __init__(self, local_path, image_name='autocompiler:gcc13', use_proxy=False, stuck_timeout=120, cmd_timeout=3600, pre_exec=True):
-        try:
-            container_id = subprocess.run(f"docker run --network bridge --hostname {self.HOSTNAME} -v {local_path}:/work/ -itd {image_name} /bin/bash", 
-                                          shell=True, capture_output=True).stdout.decode().strip()
-            assert len(container_id)==64, "Failed to create the container."
-            logging.info(f"[+] Container {container_id} created.")
-            json_str = subprocess.run(f"docker inspect {container_id}", shell=True, capture_output=True).stdout.decode()
-            ipaddr = json.loads(json_str)[0]['NetworkSettings']['IPAddress']
-            retcode = subprocess.run(f"docker exec {container_id} /bin/bash -c 'service ssh start'", shell=True, capture_output=True).returncode
-            assert retcode==0, "Failed to start the ssh service."
-        except Exception as e:
-            raise Exception(f"Failed to create the container, error: {str(e)}")
-
-        self.client = paramiko.SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.client.connect(ipaddr, username='root', password='root', port=22)
-        self.session = self.client.invoke_shell()
-        self.session.settimeout(stuck_timeout)
-        time.sleep(1)
-        self.session.recv(1024) # skip the welcome message
-        self.stuck_timeout = stuck_timeout
-        self.cmd_timeout = cmd_timeout
-        self.container_id = container_id
-        self.last_line = "root@c0mpi1er-c0nta1ner:/work# "
-        self.logger = []
-        if pre_exec:
-            self.execute_command("proxychains -q apt update")
-        if use_proxy:
-            self.execute_command("proxychains -q /bin/bash")
-
     
-    def execute_command(self, command:str) -> str:
-        """
-        Execute a command in a interactive shell on the local machine (on Ubuntu 22.04 with root user). Initially, we are in the /work/ directory.
-        @param cmd: The command to execute.
-        """
-        if self.session is None:
-            raise Exception("No session available.")
-
-        # clean the command
-        command = command.strip()
-        for wrap in ["`", "\"", "**", "```"]:
-            if command.startswith(wrap) and command.endswith(wrap):
-                command = command[len(wrap):-len(wrap)]
-
-        if "git " in command and "proxychains git " not in command:
-            command = command.replace("git ", "proxychains -q git ")
-        if "curl " in command and "proxychains curl " not in command:
-            command = command.replace("curl ", "proxychains -q curl ")
-        if "wget " in command and "proxychains wget " not in command:
-            command = command.replace("wget ", "proxychains -q wget ")
-        if "apt install " in command:
-            command = command.replace("apt install ", "apt install -y ")
-        if "apt-get install " in command:
-            command = command.replace("apt-get install ", "apt-get install -y ")
-        if command.strip() == "^C":
-            command = '\x03'
-        if "make install" in command:
-            return "Tips: Do not install the project, just compile it!"
-        # TODO delete me
-        if "make" == command.strip():
-            command = "make -j32"
-        # if "&& make" in command:
-        #     command = command.replace("&& make", "&& make -j32")
-        # if "make &&" in command and "cmake" not in command:
-        #     command = command.replace("make &&", "make -j32 &&")
-        # if "make" in command and "make clean" not in command and "cmake" not in command and "make -j32" not in command and 'automake' not in command and 'cd make' not in command:
-        #     command = command.replace("make", "make -j32")
-
-        self.session.send(command + '\n')
-
-        cmd_start_time = time.time()
-        start_time = time.time()
-        output = ""
-        while True:
-            if time.time() - cmd_start_time > self.cmd_timeout or \
-                time.time() - start_time > self.stuck_timeout: # execution timeout
-                self.session.send('\x03')
-                flag = "\nCommand execution timeout!\n"
-                while self.HOSTNAME not in output:
-                    if time.time() - start_time > self.stuck_timeout * 2:
-                        raise Exception(f"Command timeout and cannot be stopped, cmd={command}")
-                    try:
-                        recv = self.session.recv(1024)
-                    except:
-                        flag = "\nShell has stuck by waiting input. You can still input something needed to handle this stuck, just input what needed in raw with SHELL tool.\n"
-                        break
-                    encode_result = chardet.detect(recv)
-                    # print(f"encode_result: {encode_result}")
-                    # output += recv.decode(encoding=(encode_result["encoding"] if encode_result["encoding"] != None else "utf-8"),errors="ignore")
-                    output += recv.decode(encoding="utf-8",errors="ignore")
-                output += flag
-                # breakpoint()
-                return self.omit(command, output, time.time()-cmd_start_time)
+    def __init__(self, local_path, oss_fuzz_path, image_digest, use_proxy=False, stuck_timeout=120, cmd_timeout=3600, pre_exec=False):
+        self.container_id = None
+        self.logger = []
+        self.last_line = ""
+        self.cmd_timeout = cmd_timeout
+        
+        try:
+            # 1. 构造镜像名称
+            image_name = f"gcr.io/oss-fuzz-base/base-builder@sha256:{image_digest}"
             
-            if self.HOSTNAME in output: # return condition
-                return self.omit(command, output, time.time()-cmd_start_time)
-            # read outputs
-            if self.session.recv_ready():
-                while self.session.recv_ready():
-                    recv = self.session.recv(1024)
-                    encode_result = chardet.detect(recv)
-                    # breakpoint()
-                    # output += recv.decode(encoding=(encode_result["encoding"] if encode_result["encoding"] != None else "utf-8"),errors="ignore")
-                    output += recv.decode(encoding="utf-8",errors="ignore")
-                time.sleep(0.5)  # add a delay after receiving output
-                start_time = time.time() # reset the start time
-            else:
-                time.sleep(0.5)
+            # 2. 启动容器
+            # 核心修改：增加 /var/run/docker.sock 挂载，使容器具备执行 docker 命令的能力
+            docker_cmd = [
+                "docker", "run", "--network", "bridge", 
+                "--hostname", self.HOSTNAME,
+                "-v", "/var/run/docker.sock:/var/run/docker.sock",
+                "-v", f"{os.path.abspath(local_path)}:/work",
+                "-v", f"{os.path.abspath(oss_fuzz_path)}:/oss-fuzz",
+                "-itd", image_name, "/bin/bash"
+            ]
+            
+            logging.info(f"[-] Starting container with Docker socket: {' '.join(docker_cmd)}")
+            result = subprocess.run(docker_cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                logging.warning(f"[!] Docker run failed, attempting to pull image...")
+                subprocess.run(["docker", "pull", image_name])
+                result = subprocess.run(docker_cmd, capture_output=True, text=True)
 
-    def omit(self, command, output, duration)->str:
-        '''
-        omit the command from the output for special commands
-        '''
-        output = re.sub(r'\x1B[@-_][0-?]*[ -/]*[@-~]', '', output) # remove the ANSI escape characters
-        output = self.last_line + output
-        self.logger.append([command,output,duration]) # log the command and output in raw
-        # get last line of the output
-        self.last_line = output.split("\n")[-1]
-        # omit output
+            self.container_id = result.stdout.strip()
+            if len(self.container_id) < 10:
+                raise Exception(f"Failed to create container. Stderr: {result.stderr}")
+            
+            logging.info(f"[+] Container {self.container_id[:12]} created.")
+
+            # 3. 关键补丁：在容器内安装 Docker CLI
+            # OSS-Fuzz 基础镜像不含 docker 命令，必须安装客户端才能驱动 helper.py
+            logging.info("[-] Checking/Installing Docker CLI inside container...")
+            install_script = (
+                "which docker || (apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && "
+                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && "
+                "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable' > /etc/apt/sources.list.d/docker.list && "
+                "apt-get update && apt-get install -y docker-ce-cli)"
+            )
+            
+            # 执行安装（设置 300 秒超时，因为涉及网络下载）
+            install_res = subprocess.run(
+                ["docker", "exec", self.container_id, "/bin/bash", "-c", install_script],
+                capture_output=True, text=True, timeout=300
+            )
+            
+            if install_res.returncode != 0:
+                logging.error(f"[!] Docker CLI installation warning: {install_res.stderr}")
+
+            self.last_line = f"root@{self.HOSTNAME}:/work# "
+            
+            # 兼容原有的 pre_exec 逻辑
+            if pre_exec:
+                self.execute_command("apt update")
+
+        except Exception as e:
+            if self.container_id:
+                subprocess.run(f"docker stop {self.container_id} && docker rm {self.container_id}", shell=True, capture_output=True)
+            raise Exception(f"InteractiveDockerShell Init Error: {str(e)}")
+
+    def execute_command(self, command: str) -> str:
+        """
+        使用 docker exec 执行命令。
+        """
+        if not self.container_id:
+            raise Exception("No active container session.")
+
+        # 清理命令格式
+        command = command.strip().strip('`').strip('"')
+        if command == "^C": 
+            command = "pkill -INT -f ."
+        
+        logging.info(f"[-] Executing inside container: {command}")
+        
+        start_time = time.time()
+        try:
+            # 统一在 /work 目录下执行
+            exec_cmd = [
+                "docker", "exec", "-w", "/work", self.container_id, 
+                "/bin/bash", "-c", command
+            ]
+            
+            result = subprocess.run(
+                exec_cmd, 
+                capture_output=True, 
+                text=True, 
+                timeout=self.cmd_timeout,
+                errors='ignore'
+            )
+            
+            duration = time.time() - start_time
+            full_output = result.stdout + result.stderr
+            
+            return self.omit(command, full_output, duration)
+
+        except subprocess.TimeoutExpired:
+            return f"\nCommand execution timeout after {self.cmd_timeout}s!\n"
+        except Exception as e:
+            return f"\nExecution Error: {str(e)}\n"
+
+    def omit(self, command, output, duration) -> str:
+        """
+        日志裁剪逻辑。
+        """
+        output = re.sub(r'\x1B[@-_][0-?]*[ -/]*[@-~]', '', output)
+        self.logger.append([command, output, duration])
+        
         if command.startswith("make"):
-            return "\n".join(output.split("\n")[-50:])
-        elif command.startswith("configure") or command.startswith("./configure"):
-            return "\n".join(output.split("\n")[-30:])
-        elif command.startswith("cmake"):
-            return "\n".join(output.split("\n")[-30:])
+            lines = output.split("\n")
+            return "\n".join(lines[-50:]) if len(lines) > 50 else output
+        elif "configure" in command or "cmake" in command:
+            lines = output.split("\n")
+            return "\n".join(lines[-30:]) if len(lines) > 30 else output
         else:
-            if len(output)>8000:
-                output = output[:4000]+"\n......\n"+output[-4000:]
+            if len(output) > 8000:
+                return output[:4000] + "\n......\n" + output[-4000:]
             return output
 
     def close(self):
-        logging.info("[-] Stopping docker container, please wait a second...")
-        if self.client:
-            self.client.close()
         if self.container_id:
-            subprocess.run(f"docker stop {self.container_id}", shell=True)
-            subprocess.run(f"docker rm {self.container_id}", shell=True)
+            logging.info(f"[-] Stopping container {self.container_id[:12]}...")
+            subprocess.run(f"docker stop {self.container_id} && docker rm {self.container_id}", 
+                           shell=True, capture_output=True)
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
+    def __enter__(self): return self
+    def __exit__(self, exc_type, exc_val, exc_tb): self.close()
 
 # RAG and Model decision
 class SearchCompilationInstruction:
