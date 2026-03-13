@@ -1,14 +1,17 @@
-- project: freerdp
-  language: c
-  error_time: '2025-09-26'
+- project: espeak-ng
+  language: c++
+  error_time: 2023-4-3
   last_success_time: ''
-  oss-fuzz_sha: d175027c3507ae9a8a0a624aa00f731945047fd4
-  fuzzing_build_error_log: https://oss-fuzz-build-logs.storage.googleapis.com/log-6f4d5536-2503-4583-afbd-f32fe08c4759.txt
-  software_repo_url: https://github.com/FreeRDP/FreeRDP.git
-  software_sha: f070c87d7583845a6f06b776f51a4f5044c706ac
+  oss-fuzz_sha: e9d36924052c7af1d5bd82071760c1eb114e898b
+  fuzzing_build_error_log: https://oss-fuzz-build-logs.storage.googleapis.com/log-55ee4d54-bda3-46a2-9566-7f611c1a041c.txt
+  software_repo_url: https://github.com/espeak-ng/espeak-ng
+  software_sha: 12b58fbcb211024d6883b2028206bf94fab4f349
   engine: afl
   sanitizer: address
   architecture: x86_64
-  base_image_digest: fff6dfd3cd34356d1f99d47aff87c24db5706c229c8bc67726d330bd29881ee8
+  base_image_digest: c099d3d710d12d5d9a39498463ff10973977d1c7a85e9a0fbe00c7f0a0fa9fb8
   error_category: RC13
   fixed_state: 'no'
+  state: 'yes'
+  fix_result: Failure
+  fix_date: '2026-03-13'

@@ -5,6 +5,7 @@ import subprocess
 import requests
 import yaml
 import click
+import json
 import uuid
 import time
 import re
@@ -53,11 +54,24 @@ def update_yaml_report(file_path, project_index, result_str):
     except Exception as e:
         logging.error(f"[-] Failed to update YAML report: {e}")
 
+
 def start_compile_oss_fuzz(project_info, log_path, retry):
     """
     针对 OSS-Fuzz 修复任务的 Baseline 核心执行函数。
+    集成：自动下源码、自动下日志、实时全量日志落盘、轨迹保存。
     """
     project_start_time = time.time()
+    proj_name = project_info["project_name"]
+
+    # --- 【核心修改：实时日志落盘配置】 ---
+    # 为当前项目创建独立的文本日志文件，记录控制台输出的所有 Thought/Action/Observation
+    run_log_file = os.path.join(log_path, f"{proj_name}_run.log")
+    file_handler = logging.FileHandler(run_log_file, mode='w', encoding='utf-8')
+    file_handler.setFormatter(logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s'))
+    logging.getLogger().addHandler(file_handler)  # 挂载到根记录器以捕获 LangChain 输出
+
+    logging.info(f"========== STARTING REPAIR FOR PROJECT: {proj_name} ==========")
+
     stats = {
         "is_success": False,
         "discussion_triggered": "NO",
@@ -67,9 +81,8 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
         "total_lines_modified": 0,
         "time_cost": 0
     }
-    
-    proj_name = project_info["project_name"]
-    oss_fuzz_sha = project_info["oss_fuzz_sha"] 
+
+    oss_fuzz_sha = project_info["oss_fuzz_sha"]
     software_sha = project_info["software_sha"]
     software_url = project_info["url"]
     image_digest = project_info["base_image_digest"]
@@ -77,45 +90,51 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
     try:
         oss_fuzz_local_path = setup_infrastructure(oss_fuzz_sha)
         software_local_path = os.path.abspath(f"./process/project/{proj_name}")
-        
+
         if os.path.exists(software_local_path):
             shutil.rmtree(software_local_path)
-        
+
         from DownloadProject import download_project, download_fuzz_log
         download_project(software_url, software_local_path, software_sha, download_proxy=GLOBAL_PROXY)
-        
+
         log_url = project_info.get("fuzzing_build_error_log")
         local_log_path = os.path.join(software_local_path, "fuzz_build_log.txt")
         if log_url:
             download_fuzz_log(log_url, local_log_path)
-            
+
     except Exception as e:
         logging.error(f"Environment setup failed for {proj_name}: {e}")
+        logging.getLogger().removeHandler(file_handler)  # 出错也要移除 handler
         return False
+
+    full_execution_trace = []  # 用于保存 JSON 格式的全程轨迹
 
     with get_openai_callback() as cb:
         for attempt in range(retry + 1):
-            logging.info(f"--- [ATTEMPT {attempt}] Project: {proj_name} ---")
+            logging.info(f"\n>>> ATTEMPT {attempt} <<<\n")
             try:
                 with InteractiveDockerShell(
-                    local_path=software_local_path, 
-                    oss_fuzz_path=oss_fuzz_local_path,
-                    image_digest=image_digest,
-                    pre_exec=False
+                        local_path=software_local_path,
+                        oss_fuzz_path=oss_fuzz_local_path,
+                        image_digest=image_digest,
+                        pre_exec=False
                 ) as shell:
 
                     GetIns = CompileNavigator(local_path=software_local_path, project_name=proj_name)
                     Dis = ErrorSolver(project_name=proj_name)
-                    
+
                     def monitored_discussion(mistake):
                         stats["discussion_triggered"] = "YES"
                         return Dis.discussion(mistake)
-                    
+
                     monitored_discussion.__doc__ = Dis.discussion.__doc__ or "Reconcile with multiple agents."
 
                     tools = [
-                        Tool(name="Shell", description=shell.execute_command.__doc__ or "Execute command.", func=shell.execute_command),
-                        Tool(name="CompileNavigator", description=GetIns.get_instructions.__doc__ or "Find instructions.", func=GetIns.get_instructions),
+                        Tool(name="Shell", description=shell.execute_command.__doc__ or "Execute command.",
+                             func=shell.execute_command),
+                        Tool(name="CompileNavigator",
+                             description=GetIns.get_instructions.__doc__ or "Find build instructions.",
+                             func=GetIns.get_instructions),
                         Tool(name="ErrorSolver", description=monitored_discussion.__doc__, func=monitored_discussion)
                     ]
 
@@ -126,34 +145,42 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
                         architecture=project_info.get("architecture", "x86_64")
                     )
 
-                    llm = ChatOpenAI(base_url=DEEPSEEK_BASE_URL, model=DEEPSEEK_MODEL, api_key=DEEPSEEK_API_KEY, temperature=1)
+                    llm = ChatOpenAI(base_url=DEEPSEEK_BASE_URL, model=DEEPSEEK_MODEL, api_key=DEEPSEEK_API_KEY,
+                                     temperature=1)
                     agent_executor = CompilationAgentExecutor(
                         agent=create_react_agent(llm=llm, tools=tools, prompt=PromptTemplate.from_template(template)),
-                        tools=tools, verbose=True, return_intermediate_steps=True, max_iterations=50, handle_parsing_errors=True
+                        tools=tools, verbose=True, return_intermediate_steps=True, max_iterations=50,
+                        handle_parsing_errors=True
                     )
 
                     res_output = ""
+                    # 执行 Agent 并收集每一步
                     for step in agent_executor.iter({"input": question}):
+                        full_execution_trace.append(str(step))  # 记录原始步骤信息
+
                         if "intermediate_step" in step:
                             for action_tuple in step["intermediate_step"]:
                                 if isinstance(action_tuple, tuple) and len(action_tuple) > 0:
                                     action_obj = action_tuple[0]
-                                    if getattr(action_obj, 'tool', '') == "Shell" and ("helper.py" in str(getattr(action_obj, 'tool_input', '')) or "make" in str(getattr(action_obj, 'tool_input', ''))):
+                                    t_input = str(getattr(action_obj, 'tool_input', ''))
+                                    if getattr(action_obj, 'tool', '') == "Shell" and (
+                                            "helper.py" in t_input or "make" in t_input):
                                         stats["repair_rounds"] += 1
+
                         if "output" in step:
                             res_output = step["output"]
 
                     if "COMPILATION-SUCCESS" in res_output:
                         stats["is_success"] = True
                         break
-                        
+
             except Exception as e:
-                logging.error(f"Attempt {attempt} runtime error: {e}")
+                logging.error(f"Attempt {attempt} failed: {e}")
                 continue
 
         stats["total_tokens"] = cb.total_tokens
 
-    # 统计修改规模
+    # 统计修改规模 (Git Diff)
     def get_diff_metrics(dir_path, base_sha):
         try:
             cmd = ["git", "diff", "--shortstat", base_sha]
@@ -168,14 +195,16 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
                 if ins_m: lines += int(ins_m.group(1))
                 if del_m: lines += int(del_m.group(1))
             return files, lines
-        except: return 0, 0
+        except:
+            return 0, 0
 
     src_f, src_l = get_diff_metrics(software_local_path, software_sha)
     cfg_f, cfg_l = get_diff_metrics(oss_fuzz_local_path, oss_fuzz_sha)
     stats["total_files_modified"] = src_f + cfg_f
     stats["total_lines_modified"] = src_l + cfg_l
     stats["time_cost"] = (time.time() - project_start_time) / 60
-    
+
+    # 打印并记录最终报告
     report = f"""
 ============================================================
 🏁 FINAL BASELINE REPORT: {proj_name}
@@ -190,6 +219,15 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
 ============================================================
 """
     print(report)
+    logging.info(report)
+
+    # --- 【核心修改：保存结构化轨迹并清理日志 Handler】 ---
+    with open(os.path.join(log_path, f"{proj_name}_trace.json"), 'w', encoding='utf-8') as f_trace:
+        json.dump(full_execution_trace, f_trace, indent=2, ensure_ascii=False)
+
+    logging.getLogger().removeHandler(file_handler)
+    file_handler.close()
+
     return stats["is_success"]
 
 
@@ -198,12 +236,17 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
 @click.option('-l', '--log_path', type=str, required=True, help='Path to save logs')
 @click.option('-r', '--retry', type=int, default=0)
 def main(yaml_path, log_path, retry):
-    if not os.path.exists(log_path): os.makedirs(log_path, exist_ok=True)
-    
+    # 确保使用绝对路径以防 Docker 挂载导致的目录混淆
+    abs_log_path = os.path.abspath(log_path)
+    if not os.path.exists(abs_log_path):
+        os.makedirs(abs_log_path, exist_ok=True)
+
     with open(yaml_path, 'r', encoding='utf-8') as f:
         raw_projects = yaml.safe_load(f)
-    
-    # 遍历时使用 enumerate 获取 index，以便写回时定位
+
+    pending_count = sum(1 for p in raw_projects if str(p.get('state', 'no')).lower() == 'no')
+    print(f"--- [Orchestrator] Starting processing {pending_count} pending projects. ---")
+
     for index, p in enumerate(raw_projects):
         if str(p.get('state', 'no')).lower() == 'no':
             proj_info = {
@@ -217,11 +260,10 @@ def main(yaml_path, log_path, retry):
                 "engine": p.get('engine', 'libfuzzer'),
                 "architecture": p.get('architecture', 'x86_64')
             }
-            
-            # 运行修复
-            is_success = start_compile_oss_fuzz(proj_info, log_path, retry)
-            
-            # 记录结果并写回 YAML
+
+            # 传入绝对路径的 log 目录
+            is_success = start_compile_oss_fuzz(proj_info, abs_log_path, retry)
+
             result_str = "Success" if is_success else "Failure"
             update_yaml_report(yaml_path, index, result_str)
 

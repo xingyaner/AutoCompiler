@@ -15,7 +15,7 @@ LOG_URL_TEMPLATE=""
 OPENAI_BASE_URL="https://xingjiabiapi.org/v1"
 OPENAI_MODEL="gpt-5.1"
 OPENAI_EMBEDDING_MODEL="text-embedding-3-large"
-OPENAI_API_KEY="sk-" 
+OPENAI_API_KEY="sk-"
 
 # claude
 ANTHROPIC_BASE_URL="https://xingjiabiapi.org/v1"
