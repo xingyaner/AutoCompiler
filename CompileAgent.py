@@ -5,10 +5,10 @@ import subprocess
 import requests
 import yaml
 import click
-import json
 import uuid
 import time
 import re
+import json
 from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import Tool
@@ -16,14 +16,17 @@ from langchain.agents import create_react_agent
 from langchain.prompts import PromptTemplate
 from langchain_community.callbacks import get_openai_callback
 
+from Logs import is_compiled
 from Tools import InteractiveDockerShell
 from CustomAgentExecutor import CompilationAgentExecutor
 from MultiAgentGetInstructions import CompileNavigator
 from MultiAgentDiscussion import ErrorSolver
 from Config import *
 
+# 全局日志格式
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
+
 
 def setup_infrastructure(oss_fuzz_sha):
     """全自动准备 OSS-Fuzz 基础设施环境"""
@@ -35,6 +38,7 @@ def setup_infrastructure(oss_fuzz_sha):
     subprocess.run(["git", "checkout", "-f", oss_fuzz_sha], cwd=oss_fuzz_path, check=True, capture_output=True)
     return oss_fuzz_path
 
+
 def update_yaml_report(file_path, project_index, result_str):
     """
     将修复结果写回 projects.yaml 文件。
@@ -42,12 +46,12 @@ def update_yaml_report(file_path, project_index, result_str):
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
-        
+
         # 更新标记
         data[project_index]['state'] = 'yes'
         data[project_index]['fix_result'] = result_str
         data[project_index]['fix_date'] = datetime.now().strftime('%Y-%m-%d')
-        
+
         with open(file_path, 'w', encoding='utf-8') as f:
             yaml.dump(data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
         logging.info(f"[+] Updated projects.yaml at index {project_index} with result: {result_str}")
@@ -58,17 +62,17 @@ def update_yaml_report(file_path, project_index, result_str):
 def start_compile_oss_fuzz(project_info, log_path, retry):
     """
     针对 OSS-Fuzz 修复任务的 Baseline 核心执行函数。
-    集成：自动下源码、自动下日志、实时全量日志落盘、轨迹保存。
+    集成：自动下源码、自动下日志、实时全量日志落盘、物理验证唯一性。
     """
     project_start_time = time.time()
     proj_name = project_info["project_name"]
 
-    # --- 【核心修改：实时日志落盘配置】 ---
-    # 为当前项目创建独立的文本日志文件，记录控制台输出的所有 Thought/Action/Observation
+    # --- 日志审计系统：全量捕获控制台输出 ---
     run_log_file = os.path.join(log_path, f"{proj_name}_run.log")
     file_handler = logging.FileHandler(run_log_file, mode='w', encoding='utf-8')
     file_handler.setFormatter(logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s'))
-    logging.getLogger().addHandler(file_handler)  # 挂载到根记录器以捕获 LangChain 输出
+    root_logger = logging.getLogger()
+    root_logger.addHandler(file_handler)
 
     logging.info(f"========== STARTING REPAIR FOR PROJECT: {proj_name} ==========")
 
@@ -87,6 +91,11 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
     software_url = project_info["url"]
     image_digest = project_info["base_image_digest"]
 
+    # 记录物理版本锁定信息
+    logging.info(f"[Environment] OSS-Fuzz SHA: {oss_fuzz_sha}")
+    logging.info(f"[Environment] Software SHA: {software_sha}")
+    logging.info(f"[Environment] Base Image: {image_digest}")
+
     try:
         oss_fuzz_local_path = setup_infrastructure(oss_fuzz_sha)
         software_local_path = os.path.abspath(f"./process/project/{proj_name}")
@@ -104,10 +113,11 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
 
     except Exception as e:
         logging.error(f"Environment setup failed for {proj_name}: {e}")
-        logging.getLogger().removeHandler(file_handler)  # 出错也要移除 handler
+        root_logger.removeHandler(file_handler)
+        file_handler.close()
         return False
 
-    full_execution_trace = []  # 用于保存 JSON 格式的全程轨迹
+    full_execution_trace = []
 
     with get_openai_callback() as cb:
         for attempt in range(retry + 1):
@@ -138,6 +148,7 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
                         Tool(name="ErrorSolver", description=monitored_discussion.__doc__, func=monitored_discussion)
                     ]
 
+                    # 提示词中加入物理验证的路径说明
                     question = model_decision_template.format(
                         project_name=proj_name,
                         sanitizer=project_info.get("sanitizer", "address"),
@@ -149,33 +160,54 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
                                      temperature=1)
                     agent_executor = CompilationAgentExecutor(
                         agent=create_react_agent(llm=llm, tools=tools, prompt=PromptTemplate.from_template(template)),
-                        tools=tools, verbose=True, return_intermediate_steps=True, max_iterations=50,
+                        tools=tools, verbose=True, return_intermediate_steps=True, max_iterations=40,
                         handle_parsing_errors=True
                     )
 
-                    res_output = ""
-                    # 执行 Agent 并收集每一步
+                    # 执行 Agent 推理逻辑
                     for step in agent_executor.iter({"input": question}):
-                        full_execution_trace.append(str(step))  # 记录原始步骤信息
+                        full_execution_trace.append(str(step))
 
-                        if "intermediate_step" in step:
-                            for action_tuple in step["intermediate_step"]:
-                                if isinstance(action_tuple, tuple) and len(action_tuple) > 0:
-                                    action_obj = action_tuple[0]
-                                    t_input = str(getattr(action_obj, 'tool_input', ''))
-                                    if getattr(action_obj, 'tool', '') == "Shell" and (
-                                            "helper.py" in t_input or "make" in t_input):
+                        for step in agent_executor.iter({"input": question}):
+                            full_execution_trace.append(str(step))
+                            if "intermediate_step" in step:
+                                for action_tuple in step["intermediate_step"]:
+                                    if isinstance(action_tuple, tuple) and len(action_tuple) > 0:
+                                        action_obj = action_tuple[0]
+                                        t_name = getattr(action_obj, 'tool', '')
+                                        t_input = str(getattr(action_obj, 'tool_input', '')).lower()
+                                    if t_name == "Shell" and "build_fuzzers" in t_input:
                                         stats["repair_rounds"] += 1
 
-                        if "output" in step:
-                            res_output = step["output"]
+                    # --- 【物理验证唯一化逻辑】 ---
+                    logging.info(f"\n[SYSTEM] Agent execution ended. Starting FINAL PHYSICAL VERIFICATION for {proj_name}...")
+                    # 构造 OSS-Fuzz 标准构建命令，指定挂载的 /work 目录
+                    # 每一轮 Attempt 结束时的强制验证也计入 Repair Rounds
+                    stats["repair_rounds"] += 1
+                    build_cmd = (
+                        f"python3 /oss-fuzz/infra/helper.py build_fuzzers "
+                        f"--sanitizer {project_info['sanitizer']} --engine {project_info['engine']} "
+                        f"--architecture {project_info['architecture']} {proj_name} /work"
+                    )
 
-                    if "COMPILATION-SUCCESS" in res_output:
+                    # 执行构建：execute_command 内部应当已有打印输出到控制台的逻辑
+                    # 即使没有，此处通过返回的 Observation 进行强制记录
+                    build_observation = shell.execute_command(build_cmd)
+                    logging.info(f"--- [FINAL BUILD OBSERVATION] ---\n{build_observation}")
+
+                    # 使用 is_compiled 进行物理产物检查，这是唯一的成功判定标准
+                    # target_files 从元数据中获取，若无则传 None 扫描所有 ELF
+                    is_physically_fixed = is_compiled(software_local_path, project_info.get('files'), strict=False)
+
+                    if is_physically_fixed:
+                        logging.info(f"✅ [SUCCESS] Physical verification PASSED for {proj_name}.")
                         stats["is_success"] = True
                         break
+                    else:
+                        logging.warning(f"❌ [FAILURE] Physical verification FAILED for {proj_name}.")
 
             except Exception as e:
-                logging.error(f"Attempt {attempt} failed: {e}")
+                logging.error(f"Attempt {attempt} failed with error: {e}")
                 continue
 
         stats["total_tokens"] = cb.total_tokens
@@ -204,28 +236,29 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
     stats["total_lines_modified"] = src_l + cfg_l
     stats["time_cost"] = (time.time() - project_start_time) / 60
 
-    # 打印并记录最终报告
-    report = f"""
+    # --- 【报告去重与最终记录】 ---
+    final_report = f"""
 ============================================================
 🏁 FINAL BASELINE REPORT: {proj_name}
 ------------------------------------------------------------
   - [RESULT]           {'✅ SUCCESS' if stats['is_success'] else '❌ FAILURE'}
   - [DISCUSSION]       {stats['discussion_triggered']}
-  - [REPAIR ROUNDS]    {max(0, stats['repair_rounds'] - 1)}
+  - [REPAIR ROUNDS]    {stats['repair_rounds']}
   - [TOKEN USAGE]      {stats['total_tokens']}
   - [FILES MODIFIED]   {stats['total_files_modified']}
   - [LINES MODIFIED]   {stats['total_lines_modified']}
   - [TIME COST]        {stats['time_cost']:.2f} minutes
 ============================================================
 """
-    print(report)
-    logging.info(report)
+    # 只使用 logging.info 确保一次输出且落盘
+    logging.info(final_report)
 
-    # --- 【核心修改：保存结构化轨迹并清理日志 Handler】 ---
+    # 保存轨迹
     with open(os.path.join(log_path, f"{proj_name}_trace.json"), 'w', encoding='utf-8') as f_trace:
         json.dump(full_execution_trace, f_trace, indent=2, ensure_ascii=False)
 
-    logging.getLogger().removeHandler(file_handler)
+    # 清理 Handler
+    root_logger.removeHandler(file_handler)
     file_handler.close()
 
     return stats["is_success"]

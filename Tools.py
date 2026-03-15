@@ -103,40 +103,58 @@ class InteractiveDockerShell:
 
     def execute_command(self, command: str) -> str:
         """
-        使用 docker exec 执行命令。
+        使用 docker exec 流式执行命令，并将输出实时打印到控制台。
         """
         if not self.container_id:
             raise Exception("No active container session.")
 
-        # 清理命令格式
         command = command.strip().strip('`').strip('"')
-        if command == "^C": 
+        if command == "^C":
             command = "pkill -INT -f ."
-        
+
         logging.info(f"[-] Executing inside container: {command}")
-        
+
+        # 构造执行命令
+        exec_cmd = [
+            "docker", "exec", "-w", "/work", self.container_id,
+            "/bin/bash", "-c", command
+        ]
+
+        full_output = []
         start_time = time.time()
+
         try:
-            # 统一在 /work 目录下执行
-            exec_cmd = [
-                "docker", "exec", "-w", "/work", self.container_id, 
-                "/bin/bash", "-c", command
-            ]
-            
-            result = subprocess.run(
-                exec_cmd, 
-                capture_output=True, 
-                text=True, 
-                timeout=self.cmd_timeout,
-                errors='ignore'
+            # 使用 Popen 以便流式读取输出
+            process = subprocess.Popen(
+                exec_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                errors='ignore',
+                bufsize=1  # 行缓冲
             )
-            
+
+            # 实时读取并打印每一行
+            for line in iter(process.stdout.readline, ''):
+                clean_line = line.rstrip()
+                # 实时显示在控制台（会被 root_logger 捕获到 log 文件中）
+                logging.info(f"  [STDOUT] {clean_line}")
+                full_output.append(line)
+
+            process.stdout.close()
+            return_code = process.wait(timeout=self.cmd_timeout)
+
             duration = time.time() - start_time
-            full_output = result.stdout + result.stderr
-            
-            return self.omit(command, full_output, duration)
+            combined_output = "".join(full_output)
+
+            # 如果是构建或验证命令，记录退出码信息
+            if return_code != 0:
+                combined_output += f"\n[Process exited with code {return_code}]\n"
+
+            return self.omit(command, combined_output, duration)
 
         except subprocess.TimeoutExpired:
+            process.kill()
             return f"\nCommand execution timeout after {self.cmd_timeout}s!\n"
         except Exception as e:
             return f"\nExecution Error: {str(e)}\n"

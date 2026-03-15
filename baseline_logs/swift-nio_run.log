@@ -1,0 +1,46 @@
+2026-03-15 19:51:06,376 | root | INFO | ========== STARTING REPAIR FOR PROJECT: swift-nio ==========
+2026-03-15 19:51:06,377 | root | INFO | [Environment] OSS-Fuzz SHA: d331f3ca153e4ec9b7253b1e0ad03d122c6441b4
+2026-03-15 19:51:06,377 | root | INFO | [Environment] Software SHA: 97c3f28ad0dc2dc4782483c57c4a71050d7afd75
+2026-03-15 19:51:06,377 | root | INFO | [Environment] Base Image: 1051d1a0a51f82987e4fa36f85dd8cee525df635f8523ac35575086979625e67
+2026-03-15 19:51:06,377 | root | INFO | [-] Locking oss-fuzz to SHA: d331f3ca153e4ec9b7253b1e0ad03d122c6441b4
+2026-03-15 19:51:06,388 | root | INFO | [-] Automatically downloading project from https://github.com/apple/swift-nio.git
+2026-03-15 20:03:01,504 | root | ERROR | Failed to clone https://github.com/apple/swift-nio.git: 正克隆到 '/root/BuildFixingBaseline/AutoCompiler/process/project/swift-nio'...
+error: RPC 失败。curl 56 GnuTLS recv error (-54): Error in the pull function.
+error: 预期仍然需要 30 个字节的正文
+fatal: 在引用列表之后应该有一个 flush 包
+
+2026-03-15 20:03:01,504 | root | INFO | [-] Automatically downloading build error log from: https://oss-fuzz-build-logs.storage.googleapis.com/log-41bfc0a5-c0fe-48b4-a682-c0f48e48154d.txt
+2026-03-15 20:03:32,694 | root | INFO | [+] Log successfully saved to /root/BuildFixingBaseline/AutoCompiler/process/project/swift-nio/fuzz_build_log.txt
+2026-03-15 20:03:32,694 | root | INFO | 
+>>> ATTEMPT 0 <<<
+
+2026-03-15 20:03:32,695 | root | INFO | [-] Starting container with Docker socket: docker run --network bridge --hostname c0mpi1er-c0nta1ner -v /var/run/docker.sock:/var/run/docker.sock -v /root/BuildFixingBaseline/AutoCompiler/process/project/swift-nio:/work -v /root/BuildFixingBaseline/AutoCompiler/oss-fuzz:/oss-fuzz -itd gcr.io/oss-fuzz-base/base-builder@sha256:1051d1a0a51f82987e4fa36f85dd8cee525df635f8523ac35575086979625e67 /bin/bash
+2026-03-15 20:03:47,799 | root | WARNING | [!] Docker run failed, attempting to pull image...
+2026-03-15 20:04:17,841 | root | ERROR | Attempt 0 failed with error: InteractiveDockerShell Init Error: Failed to create container. Stderr: Unable to find image 'gcr.io/oss-fuzz-base/base-builder@sha256:1051d1a0a51f82987e4fa36f85dd8cee525df635f8523ac35575086979625e67' locally
+docker: Error response from daemon: Get "https://gcr.io/v2/": context deadline exceeded
+
+Run 'docker run --help' for more information
+
+2026-03-15 20:04:17,841 | root | INFO | 
+>>> ATTEMPT 1 <<<
+
+2026-03-15 20:04:17,841 | root | INFO | [-] Starting container with Docker socket: docker run --network bridge --hostname c0mpi1er-c0nta1ner -v /var/run/docker.sock:/var/run/docker.sock -v /root/BuildFixingBaseline/AutoCompiler/process/project/swift-nio:/work -v /root/BuildFixingBaseline/AutoCompiler/oss-fuzz:/oss-fuzz -itd gcr.io/oss-fuzz-base/base-builder@sha256:1051d1a0a51f82987e4fa36f85dd8cee525df635f8523ac35575086979625e67 /bin/bash
+2026-03-15 20:04:32,867 | root | WARNING | [!] Docker run failed, attempting to pull image...
+2026-03-15 20:05:02,916 | root | ERROR | Attempt 1 failed with error: InteractiveDockerShell Init Error: Failed to create container. Stderr: Unable to find image 'gcr.io/oss-fuzz-base/base-builder@sha256:1051d1a0a51f82987e4fa36f85dd8cee525df635f8523ac35575086979625e67' locally
+docker: Error response from daemon: Get "https://gcr.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+
+Run 'docker run --help' for more information
+
+2026-03-15 20:05:02,927 | root | INFO | 
+============================================================
+🏁 FINAL BASELINE REPORT: swift-nio
+------------------------------------------------------------
+  - [RESULT]           ❌ FAILURE
+  - [DISCUSSION]       NO
+  - [REPAIR ROUNDS]    0
+  - [TOKEN USAGE]      0
+  - [FILES MODIFIED]   0
+  - [LINES MODIFIED]   0
+  - [TIME COST]        13.94 minutes
+============================================================
+
