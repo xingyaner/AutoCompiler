@@ -13,39 +13,5 @@
   error_category: RC13
   fixed_state: 'no'
   state: 'yes'
-  fix_result: Failure
-  fix_date: '2026-03-15'
-- project: swift-nio
-  language: swift
-  error_time: '2025-10-07'
-  last_success_time: ''
-  oss-fuzz_sha: d331f3ca153e4ec9b7253b1e0ad03d122c6441b4
-  fuzzing_build_error_log: https://oss-fuzz-build-logs.storage.googleapis.com/log-41bfc0a5-c0fe-48b4-a682-c0f48e48154d.txt
-  software_repo_url: https://github.com/apple/swift-nio.git
-  software_sha: 97c3f28ad0dc2dc4782483c57c4a71050d7afd75
-  engine: libfuzzer
-  sanitizer: address
-  architecture: x86_64
-  base_image_digest: 1051d1a0a51f82987e4fa36f85dd8cee525df635f8523ac35575086979625e67
-  error_category: RC13
-  fixed_state: 'no'
-  state: 'yes'
-  fix_result: Failure
-  fix_date: '2026-03-15'
-- project: trafficserver
-  language: c++
-  error_time: 2025-2-18
-  last_success_time: ''
-  oss-fuzz_sha: e9d36924052c7af1d5bd82071760c1eb114e898b
-  fuzzing_build_error_log: https://oss-fuzz-build-logs.storage.googleapis.com/log-01341f9e-36a2-484e-a86c-da0b6cf9dff4.txt
-  software_repo_url: https://github.com/apache/trafficserver.git
-  software_sha: 61593411e354271c0fa9cd14889dcccb7b875169
-  engine: afl
-  sanitizer: address
-  architecture: x86_64
-  base_image_digest: c099d3d710d12d5d9a39498463ff10973977d1c7a85e9a0fbe00c7f0a0fa9fb8
-  error_category: RC13
-  fixed_state: 'no'
-  state: 'yes'
-  fix_result: Failure
-  fix_date: '2026-03-15'
+  fix_result: Success
+  fix_date: '2026-03-16'

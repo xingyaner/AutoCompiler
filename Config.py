@@ -62,23 +62,39 @@ Thought:{agent_scratchpad}"""
 
 
 # 恢复为原始自主决策模式提示词
+template = """You are an experienced software development engineer. You have access to the following tools:
+{tools}
+Use the following format:
+Question: input question
+Thought: what to do
+Action: [{tool_names}]
+Action Input: input
+Observation: result
+... (repeat)
+Thought: I now know the final answer
+Final Answer: final answer
+Begin!
+Question: {input}
+Thought:{agent_scratchpad}"""
+
+# 恢复为原始自主决策模式提示词
 model_decision_template = """I want you to help me fix the build error for project {project_name}.
 
 FACTS ABOUT THE ENVIRONMENT:
-1. This project is integrated into the OSS-Fuzz infrastructure.
-2. The build configs are in `/oss-fuzz/projects/{project_name}/`.
-3. The project source code is in `/work/`.
-4. THE ORIGINAL BUILD ERROR LOG IS AT: `/work/fuzz_build_log.txt`. 
-5. Build command: `python3 /oss-fuzz/infra/helper.py build_fuzzers --sanitizer address --engine afl --architecture x86_64 espeak-ng`.
+1. This project is integrated into the OSS-Fuzz infrastructure on this host.
+2. The build configs are in `{oss_fuzz_projects_path}`.
+3. The project source code is in `{software_local_path}`.
+4. THE ORIGINAL BUILD ERROR LOG IS AT: `{initial_error_log}`.
+5. THE LIVE BUILD LOG (from your current actions) IS SAVED AT: `{physical_build_log}`.
 
 RULES:
-1. You may use Shell and CompileNavigator to read any files in the above paths to understand the build logic.
-2. STRICT VERSION LOCK: Do not attempt to pull latest code or change branches.
-3. You must modify the source code or build scripts within the provided paths to fix the build errors.
-4. Unless you encounter a problem that you cannot solve, there is no need to call the ErrorSolver tool.
-5. When done, output COMPILATION-SUCCESS or COMPILATION-FAIL.
+1. Use 'Shell' to modify files or run commands. 
+2. When you run build_fuzzers, the output will be streamed to the console. 
+3. Use 'ReadBuildLog' to view the content of the build output if you need details.
+4. Build command: `python3 {oss_fuzz_infra_path}/helper.py build_fuzzers --sanitizer {sanitizer} --engine {engine} --architecture {architecture} {project_name} {software_local_path}`.
+5. When the build passes, output COMPILATION-SUCCESS.
 
-NOTICE: The error log is at `/work/fuzz_build_log.txt`.
+NOTICE: The original error log is at `{initial_error_log}`.
 """
 
 discussion_template1="""You are an experienced compiler troubleshooting expert. Your task is to analyze provided error messages, identify likely causes, and deliver specific solutions. 

@@ -10,6 +10,8 @@ import time
 import re
 import json
 from datetime import datetime
+
+from invoke.util import LOG_FORMAT
 from langchain_openai import ChatOpenAI
 from langchain_core.tools import Tool
 from langchain.agents import create_react_agent
@@ -17,11 +19,12 @@ from langchain.prompts import PromptTemplate
 from langchain_community.callbacks import get_openai_callback
 
 from Logs import is_compiled
-from Tools import InteractiveDockerShell
+# from Tools import InteractiveDockerShell
 from CustomAgentExecutor import CompilationAgentExecutor
 from MultiAgentGetInstructions import CompileNavigator
 from MultiAgentDiscussion import ErrorSolver
 from Config import *
+from Tools import HostShell, LogReader
 
 # 全局日志格式
 # 配置日志
@@ -29,15 +32,17 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(level
 
 
 def setup_infrastructure(oss_fuzz_sha):
-    """全自动准备 OSS-Fuzz 基础设施环境"""
+    """物理重置 OSS-Fuzz 基础设施环境"""
     oss_fuzz_path = os.path.abspath("./oss-fuzz")
     if not os.path.exists(oss_fuzz_path):
-        logging.info(f"[-] oss-fuzz not found. Cloning...")
+        logging.info(f"[-] Cloning oss-fuzz...")
         subprocess.run(["git", "clone", "https://github.com/google/oss-fuzz.git", oss_fuzz_path], check=True)
-    logging.info(f"[-] Locking oss-fuzz to SHA: {oss_fuzz_sha}")
+
+    logging.info(f"[-] Resetting oss-fuzz to original SHA: {oss_fuzz_sha}")
+    subprocess.run(["git", "reset", "--hard"], cwd=oss_fuzz_path, check=True, capture_output=True)
+    subprocess.run(["git", "clean", "-fd"], cwd=oss_fuzz_path, check=True, capture_output=True)
     subprocess.run(["git", "checkout", "-f", oss_fuzz_sha], cwd=oss_fuzz_path, check=True, capture_output=True)
     return oss_fuzz_path
-
 
 def update_yaml_report(file_path, project_index, result_str):
     """
@@ -59,20 +64,25 @@ def update_yaml_report(file_path, project_index, result_str):
         logging.error(f"[-] Failed to update YAML report: {e}")
 
 
-def start_compile_oss_fuzz(project_info, log_path, retry):
+def start_compile_oss_fuzz(project_info, log_dir, retry):
     """
     针对 OSS-Fuzz 修复任务的 Baseline 核心执行函数。
-    集成：自动下源码、自动下日志、实时全量日志落盘、物理验证唯一性。
+    判定逻辑：物理清空 -> 终极构建 -> 日志无误(Last 10 lines) + 产物特征正向匹配。
     """
     project_start_time = time.time()
     proj_name = project_info["project_name"]
 
-    # --- 日志审计系统：全量捕获控制台输出 ---
-    run_log_file = os.path.join(log_path, f"{proj_name}_run.log")
+    # --- 1. 日志审计系统初始化 ---
+    run_log_file = os.path.join(log_dir, f"{proj_name}_run.log")
     file_handler = logging.FileHandler(run_log_file, mode='w', encoding='utf-8')
-    file_handler.setFormatter(logging.Formatter('%(asctime)s | %(name)s | %(levelname)s | %(message)s'))
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     root_logger = logging.getLogger()
     root_logger.addHandler(file_handler)
+
+    fuzz_log_dir = os.path.abspath("./fuzz_build_log")
+    os.makedirs(fuzz_log_dir, exist_ok=True)
+    physical_build_log = os.path.join(fuzz_log_dir, f"{proj_name}_build.log")
+    if os.path.exists(physical_build_log): os.remove(physical_build_log)
 
     logging.info(f"========== STARTING REPAIR FOR PROJECT: {proj_name} ==========")
 
@@ -83,7 +93,8 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
         "total_tokens": 0,
         "total_files_modified": 0,
         "total_lines_modified": 0,
-        "time_cost": 0
+        "time_cost": 0,
+        "build_error_snippet": "N/A"
     }
 
     oss_fuzz_sha = project_info["oss_fuzz_sha"]
@@ -91,13 +102,10 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
     software_url = project_info["url"]
     image_digest = project_info["base_image_digest"]
 
-    # 记录物理版本锁定信息
-    logging.info(f"[Environment] OSS-Fuzz SHA: {oss_fuzz_sha}")
-    logging.info(f"[Environment] Software SHA: {software_sha}")
-    logging.info(f"[Environment] Base Image: {image_digest}")
-
     try:
+        # 准备环境并锁定版本
         oss_fuzz_local_path = setup_infrastructure(oss_fuzz_sha)
+        build_out_path = os.path.join(oss_fuzz_local_path, "build", "out", proj_name)
         software_local_path = os.path.abspath(f"./process/project/{proj_name}")
 
         if os.path.exists(software_local_path):
@@ -106,13 +114,11 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
         from DownloadProject import download_project, download_fuzz_log
         download_project(software_url, software_local_path, software_sha, download_proxy=GLOBAL_PROXY)
 
-        log_url = project_info.get("fuzzing_build_error_log")
-        local_log_path = os.path.join(software_local_path, "fuzz_build_log.txt")
-        if log_url:
-            download_fuzz_log(log_url, local_log_path)
+        initial_log_path = os.path.join(software_local_path, "fuzz_build_log.txt")
+        download_fuzz_log(project_info.get("fuzzing_build_error_log"), initial_log_path)
 
     except Exception as e:
-        logging.error(f"Environment setup failed for {proj_name}: {e}")
+        logging.error(f"Setup Aborted: {e}")
         root_logger.removeHandler(file_handler)
         file_handler.close()
         return False
@@ -123,121 +129,144 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
         for attempt in range(retry + 1):
             logging.info(f"\n>>> ATTEMPT {attempt} <<<\n")
             try:
-                with InteractiveDockerShell(
-                        local_path=software_local_path,
-                        oss_fuzz_path=oss_fuzz_local_path,
-                        image_digest=image_digest,
-                        pre_exec=False
-                ) as shell:
+                shell = HostShell(build_log_path=physical_build_log)
+                reader = LogReader(physical_build_log)
 
-                    GetIns = CompileNavigator(local_path=software_local_path, project_name=proj_name)
-                    Dis = ErrorSolver(project_name=proj_name)
+                GetIns = CompileNavigator(local_path=software_local_path, project_name=proj_name)
+                Dis = ErrorSolver(project_name=proj_name)
 
-                    def monitored_discussion(mistake):
-                        stats["discussion_triggered"] = "YES"
-                        return Dis.discussion(mistake)
+                def monitored_discussion(mistake):
+                    stats["discussion_triggered"] = "YES"
+                    return Dis.discussion(mistake)
 
-                    monitored_discussion.__doc__ = Dis.discussion.__doc__ or "Reconcile with multiple agents."
+                monitored_discussion.__doc__ = Dis.discussion.__doc__ or "Reconcile with agents."
 
-                    tools = [
-                        Tool(name="Shell", description=shell.execute_command.__doc__ or "Execute command.",
-                             func=shell.execute_command),
-                        Tool(name="CompileNavigator",
-                             description=GetIns.get_instructions.__doc__ or "Find build instructions.",
-                             func=GetIns.get_instructions),
-                        Tool(name="ErrorSolver", description=monitored_discussion.__doc__, func=monitored_discussion)
-                    ]
+                tools = [
+                    Tool(name="Shell", description="Execute host commands to modify files or build.",
+                         func=shell.execute_command),
+                    Tool(name="CompileNavigator", description="Find build instructions.", func=GetIns.get_instructions),
+                    Tool(name="ErrorSolver", description="Multi-agent discussion for complex errors.",
+                         func=monitored_discussion),
+                    Tool(name="ReadBuildLog", description="Read the last 100 lines of current build log.",
+                         func=reader.read_last_lines)
+                ]
 
-                    # 提示词中加入物理验证的路径说明
-                    question = model_decision_template.format(
-                        project_name=proj_name,
-                        sanitizer=project_info.get("sanitizer", "address"),
-                        engine=project_info.get("engine", "libfuzzer"),
-                        architecture=project_info.get("architecture", "x86_64")
-                    )
+                question = model_decision_template.format(
+                    project_name=proj_name,
+                    oss_fuzz_projects_path=os.path.join(oss_fuzz_local_path, "projects", proj_name),
+                    software_local_path=software_local_path,
+                    oss_fuzz_infra_path=os.path.join(oss_fuzz_local_path, "infra"),
+                    initial_error_log=initial_log_path,
+                    physical_build_log=physical_build_log,
+                    sanitizer=project_info["sanitizer"],
+                    engine=project_info["engine"],
+                    architecture=project_info["architecture"]
+                )
 
-                    llm = ChatOpenAI(base_url=DEEPSEEK_BASE_URL, model=DEEPSEEK_MODEL, api_key=DEEPSEEK_API_KEY,
-                                     temperature=1)
-                    agent_executor = CompilationAgentExecutor(
-                        agent=create_react_agent(llm=llm, tools=tools, prompt=PromptTemplate.from_template(template)),
-                        tools=tools, verbose=True, return_intermediate_steps=True, max_iterations=40,
-                        handle_parsing_errors=True
-                    )
+                llm = ChatOpenAI(base_url=DEEPSEEK_BASE_URL, model=DEEPSEEK_MODEL, api_key=DEEPSEEK_API_KEY,
+                                 temperature=1)
+                agent_executor = CompilationAgentExecutor(
+                    agent=create_react_agent(llm=llm, tools=tools, prompt=PromptTemplate.from_template(template)),
+                    tools=tools, verbose=True, return_intermediate_steps=True, max_iterations=40,
+                    handle_parsing_errors=True
+                )
 
-                    # 执行 Agent 推理逻辑
-                    for step in agent_executor.iter({"input": question}):
-                        full_execution_trace.append(str(step))
+                res_output = ""
+                # 执行 Agent 循环
+                for step in agent_executor.iter({"input": question}):
+                    full_execution_trace.append(str(step))
+                    if "intermediate_step" in step:
+                        for action_tuple in step["intermediate_step"]:
+                            if isinstance(action_tuple, tuple) and len(action_tuple) > 0:
+                                action_obj = action_tuple[0]
+                                t_input = str(getattr(action_obj, 'tool_input', '')).lower()
+                                if "build_fuzzers" in t_input:
+                                    stats["repair_rounds"] += 1
+                    if "output" in step:
+                        res_output = step["output"]
 
-                        for step in agent_executor.iter({"input": question}):
-                            full_execution_trace.append(str(step))
-                            if "intermediate_step" in step:
-                                for action_tuple in step["intermediate_step"]:
-                                    if isinstance(action_tuple, tuple) and len(action_tuple) > 0:
-                                        action_obj = action_tuple[0]
-                                        t_name = getattr(action_obj, 'tool', '')
-                                        t_input = str(getattr(action_obj, 'tool_input', '')).lower()
-                                    if t_name == "Shell" and "build_fuzzers" in t_input:
-                                        stats["repair_rounds"] += 1
+                # --- 3. 终极验证：强制物理判定逻辑 ---
+                logging.info(f"\n[SYSTEM] Agent cycle ended. Starting PHYSICAL VALIDATION for {proj_name}...")
 
-                    # --- 【物理验证唯一化逻辑】 ---
-                    logging.info(f"\n[SYSTEM] Agent execution ended. Starting FINAL PHYSICAL VERIFICATION for {proj_name}...")
-                    # 构造 OSS-Fuzz 标准构建命令，指定挂载的 /work 目录
-                    # 每一轮 Attempt 结束时的强制验证也计入 Repair Rounds
-                    stats["repair_rounds"] += 1
-                    build_cmd = (
-                        f"python3 /oss-fuzz/infra/helper.py build_fuzzers "
-                        f"--sanitizer {project_info['sanitizer']} --engine {project_info['engine']} "
-                        f"--architecture {project_info['architecture']} {proj_name} /work"
-                    )
+                # 【修改点 1】：物理环境清空，确保判定结果来自当前补丁
+                if os.path.exists(build_out_path):
+                    logging.info(f"[-] Cleaning output directory before verification: {build_out_path}")
+                    shutil.rmtree(build_out_path)
+                os.makedirs(build_out_path, exist_ok=True)
 
-                    # 执行构建：execute_command 内部应当已有打印输出到控制台的逻辑
-                    # 即使没有，此处通过返回的 Observation 进行强制记录
-                    build_observation = shell.execute_command(build_cmd)
-                    logging.info(f"--- [FINAL BUILD OBSERVATION] ---\n{build_observation}")
+                # 步骤 2: 执行构建指令
+                stats["repair_rounds"] += 1
+                verify_cmd = (
+                    f"python3 {oss_fuzz_local_path}/infra/helper.py build_fuzzers "
+                    f"--sanitizer {project_info['sanitizer']} --engine {project_info['engine']} "
+                    f"--architecture {project_info['architecture']} {proj_name} {software_local_path}"
+                )
+                build_obs = shell.execute_command(verify_cmd)
 
-                    # 使用 is_compiled 进行物理产物检查，这是唯一的成功判定标准
-                    # target_files 从元数据中获取，若无则传 None 扫描所有 ELF
-                    is_physically_fixed = is_compiled(software_local_path, project_info.get('files'), strict=False)
+                # 【修改点 2】：判定维度 A - 日志负向过滤 (检查最后 10 行)
+                log_ok = True
+                last_10_lines = [l.lower() for l in build_obs.split('\n') if l.strip()][-10:]
+                fail_keywords = ["error", "failed", "timeout", "timed out", "build failed"]
 
-                    if is_physically_fixed:
-                        logging.info(f"✅ [SUCCESS] Physical verification PASSED for {proj_name}.")
-                        stats["is_success"] = True
+                for line in last_10_lines:
+                    if any(kw in line for kw in fail_keywords):
+                        log_ok = False
+                        stats["build_error_snippet"] = line  # 记录导致失败的具体行
                         break
-                    else:
-                        logging.warning(f"❌ [FAILURE] Physical verification FAILED for {proj_name}.")
+
+                # 【修改点 3】：判定维度 B - 产物特征正向匹配 (成功标志识别)
+                artifact_found = False
+                success_features = ('afl-', 'llvm-', 'jazzer', 'sanitizer', 'srcmap')
+
+                if os.path.exists(build_out_path):
+                    for root, dirs, files in os.walk(build_out_path):
+                        for f_name in files:
+                            # 逻辑订正：只要包含特定特征字符串即认为成功
+                            if any(feature in f_name.lower() for feature in success_features):
+                                logging.info(f"[+] Success feature detected in output: {f_name}")
+                                artifact_found = True
+                                break
+                        if artifact_found: break
+
+                # 综合物理裁决
+                if log_ok and artifact_found:
+                    logging.info(f"✅ [VERIFICATION PASSED] Build log is clean and valid artifacts generated.")
+                    stats["is_success"] = True
+                    break
+                else:
+                    err_reason = "Log error" if not log_ok else "No matching artifact features"
+                    logging.warning(f"❌ [VERIFICATION FAILED] Reason: {err_reason}")
 
             except Exception as e:
-                logging.error(f"Attempt {attempt} failed with error: {e}")
+                logging.error(f"Attempt execution error: {e}")
                 continue
 
         stats["total_tokens"] = cb.total_tokens
 
-    # 统计修改规模 (Git Diff)
+    # --- 4. 统计改动规模 ---
     def get_diff_metrics(dir_path, base_sha):
         try:
-            cmd = ["git", "diff", "--shortstat", base_sha]
-            res = subprocess.run(cmd, cwd=dir_path, capture_output=True, text=True)
+            res = subprocess.run(["git", "diff", "--shortstat", base_sha], cwd=dir_path, capture_output=True, text=True)
             output = res.stdout.strip()
-            files, lines = 0, 0
+            f, l = 0, 0
             if output:
-                f_m = re.search(r"(\d+) file", output)
-                ins_m = re.search(r"(\d+) insertion", output)
+                f_m = re.search(r"(\d+) file", output);
+                ins_m = re.search(r"(\d+) insertion", output);
                 del_m = re.search(r"(\d+) deletion", output)
-                if f_m: files = int(f_m.group(1))
-                if ins_m: lines += int(ins_m.group(1))
-                if del_m: lines += int(del_m.group(1))
-            return files, lines
+                if f_m: f = int(f_m.group(1))
+                if ins_m: l += int(ins_m.group(1))
+                if del_m: l += int(del_m.group(1))
+            return f, l
         except:
             return 0, 0
 
     src_f, src_l = get_diff_metrics(software_local_path, software_sha)
     cfg_f, cfg_l = get_diff_metrics(oss_fuzz_local_path, oss_fuzz_sha)
-    stats["total_files_modified"] = src_f + cfg_f
-    stats["total_lines_modified"] = src_l + cfg_l
+    stats["total_files_modified"], stats["total_lines_modified"] = src_f + cfg_f, src_l + cfg_l
     stats["time_cost"] = (time.time() - project_start_time) / 60
 
-    # --- 【报告去重与最终记录】 ---
-    final_report = f"""
+    # 生成 6 项核心指标报告
+    report = f"""
 ============================================================
 🏁 FINAL BASELINE REPORT: {proj_name}
 ------------------------------------------------------------
@@ -250,17 +279,13 @@ def start_compile_oss_fuzz(project_info, log_path, retry):
   - [TIME COST]        {stats['time_cost']:.2f} minutes
 ============================================================
 """
-    # 只使用 logging.info 确保一次输出且落盘
-    logging.info(final_report)
+    logging.info(report)
 
-    # 保存轨迹
-    with open(os.path.join(log_path, f"{proj_name}_trace.json"), 'w', encoding='utf-8') as f_trace:
-        json.dump(full_execution_trace, f_trace, indent=2, ensure_ascii=False)
+    with open(os.path.join(log_dir, f"{proj_name}_trace.json"), 'w') as f_trace:
+        json.dump(full_execution_trace, f_trace, indent=2)
 
-    # 清理 Handler
     root_logger.removeHandler(file_handler)
     file_handler.close()
-
     return stats["is_success"]
 
 

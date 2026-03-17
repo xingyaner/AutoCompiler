@@ -33,113 +33,41 @@ from langchain_chroma import Chroma
 from Config import *
 
 
-class InteractiveDockerShell:
-    HOSTNAME = 'c0mpi1er-c0nta1ner'
-    
-    def __init__(self, local_path, oss_fuzz_path, image_digest, use_proxy=False, stuck_timeout=120, cmd_timeout=3600, pre_exec=False):
-        self.container_id = None
+class HostShell:
+    """在宿主机执行命令，并将输出实时流式打印到控制台并保存到文件"""
+
+    def __init__(self, build_log_path, cmd_timeout=3600):
         self.logger = []
-        self.last_line = ""
         self.cmd_timeout = cmd_timeout
-        
-        try:
-            # 1. 构造镜像名称
-            image_name = f"gcr.io/oss-fuzz-base/base-builder@sha256:{image_digest}"
-            
-            # 2. 启动容器
-            # 核心修改：增加 /var/run/docker.sock 挂载，使容器具备执行 docker 命令的能力
-            docker_cmd = [
-                "docker", "run", "--network", "bridge", 
-                "--hostname", self.HOSTNAME,
-                "-v", "/var/run/docker.sock:/var/run/docker.sock",
-                "-v", f"{os.path.abspath(local_path)}:/work",
-                "-v", f"{os.path.abspath(oss_fuzz_path)}:/oss-fuzz",
-                "-itd", image_name, "/bin/bash"
-            ]
-            
-            logging.info(f"[-] Starting container with Docker socket: {' '.join(docker_cmd)}")
-            result = subprocess.run(docker_cmd, capture_output=True, text=True)
-            
-            if result.returncode != 0:
-                logging.warning(f"[!] Docker run failed, attempting to pull image...")
-                subprocess.run(["docker", "pull", image_name])
-                result = subprocess.run(docker_cmd, capture_output=True, text=True)
-
-            self.container_id = result.stdout.strip()
-            if len(self.container_id) < 10:
-                raise Exception(f"Failed to create container. Stderr: {result.stderr}")
-            
-            logging.info(f"[+] Container {self.container_id[:12]} created.")
-
-            # 3. 关键补丁：在容器内安装 Docker CLI
-            # OSS-Fuzz 基础镜像不含 docker 命令，必须安装客户端才能驱动 helper.py
-            logging.info("[-] Checking/Installing Docker CLI inside container...")
-            install_script = (
-                "which docker || (apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && "
-                "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && "
-                "echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable' > /etc/apt/sources.list.d/docker.list && "
-                "apt-get update && apt-get install -y docker-ce-cli)"
-            )
-            
-            # 执行安装（设置 300 秒超时，因为涉及网络下载）
-            install_res = subprocess.run(
-                ["docker", "exec", self.container_id, "/bin/bash", "-c", install_script],
-                capture_output=True, text=True, timeout=300
-            )
-            
-            if install_res.returncode != 0:
-                logging.error(f"[!] Docker CLI installation warning: {install_res.stderr}")
-
-            self.last_line = f"root@{self.HOSTNAME}:/work# "
-            
-            # 兼容原有的 pre_exec 逻辑
-            if pre_exec:
-                self.execute_command("apt update")
-
-        except Exception as e:
-            if self.container_id:
-                subprocess.run(f"docker stop {self.container_id} && docker rm {self.container_id}", shell=True, capture_output=True)
-            raise Exception(f"InteractiveDockerShell Init Error: {str(e)}")
+        self.build_log_path = build_log_path
 
     def execute_command(self, command: str) -> str:
         """
-        使用 docker exec 流式执行命令，并将输出实时打印到控制台。
+        Execute a shell command on the host machine. Output is streamed to console and saved to build log.
         """
-        if not self.container_id:
-            raise Exception("No active container session.")
-
         command = command.strip().strip('`').strip('"')
-        if command == "^C":
-            command = "pkill -INT -f ."
+        if command == "^C": command = "pkill -INT -f ."
 
-        logging.info(f"[-] Executing inside container: {command}")
-
-        # 构造执行命令
-        exec_cmd = [
-            "docker", "exec", "-w", "/work", self.container_id,
-            "/bin/bash", "-c", command
-        ]
-
-        full_output = []
+        logging.info(f"[-] [Host Execution]: {command}")
         start_time = time.time()
+        full_output = []
 
         try:
-            # 使用 Popen 以便流式读取输出
+            # 开启进程
             process = subprocess.Popen(
-                exec_cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                errors='ignore',
-                bufsize=1  # 行缓冲
+                command, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT, text=True, errors='ignore', bufsize=1
             )
 
-            # 实时读取并打印每一行
-            for line in iter(process.stdout.readline, ''):
-                clean_line = line.rstrip()
-                # 实时显示在控制台（会被 root_logger 捕获到 log 文件中）
-                logging.info(f"  [STDOUT] {clean_line}")
-                full_output.append(line)
+            # 以追加模式打开物理构建日志文件
+            with open(self.build_log_path, 'a', encoding='utf-8') as f_build:
+                for line in iter(process.stdout.readline, ''):
+                    # 1. 实时显示在控制台 (会被 root_logger 捕获入 _run.log)
+                    logging.info(f"  [STDOUT] {line.rstrip()}")
+                    # 2. 写入物理构建日志文件
+                    f_build.write(line)
+                    f_build.flush()
+                    full_output.append(line)
 
             process.stdout.close()
             return_code = process.wait(timeout=self.cmd_timeout)
@@ -147,44 +75,35 @@ class InteractiveDockerShell:
             duration = time.time() - start_time
             combined_output = "".join(full_output)
 
-            # 如果是构建或验证命令，记录退出码信息
             if return_code != 0:
                 combined_output += f"\n[Process exited with code {return_code}]\n"
 
             return self.omit(command, combined_output, duration)
-
-        except subprocess.TimeoutExpired:
-            process.kill()
-            return f"\nCommand execution timeout after {self.cmd_timeout}s!\n"
         except Exception as e:
             return f"\nExecution Error: {str(e)}\n"
 
     def omit(self, command, output, duration) -> str:
-        """
-        日志裁剪逻辑。
-        """
         output = re.sub(r'\x1B[@-_][0-?]*[ -/]*[@-~]', '', output)
         self.logger.append([command, output, duration])
-        
-        if command.startswith("make"):
-            lines = output.split("\n")
-            return "\n".join(lines[-50:]) if len(lines) > 50 else output
-        elif "configure" in command or "cmake" in command:
-            lines = output.split("\n")
-            return "\n".join(lines[-30:]) if len(lines) > 30 else output
-        else:
-            if len(output) > 8000:
-                return output[:4000] + "\n......\n" + output[-4000:]
-            return output
+        if len(output) > 8000:
+            return output[:4000] + "\n......\n" + output[-4000:]
+        return output
 
-    def close(self):
-        if self.container_id:
-            logging.info(f"[-] Stopping container {self.container_id[:12]}...")
-            subprocess.run(f"docker stop {self.container_id} && docker rm {self.container_id}", 
-                           shell=True, capture_output=True)
 
-    def __enter__(self): return self
-    def __exit__(self, exc_type, exc_val, exc_tb): self.close()
+class LogReader:
+    def __init__(self, log_path):
+        self.log_path = log_path
+
+    def read_last_lines(self, n=100) -> str:
+        if not os.path.exists(self.log_path):
+            return f"Error: Log file {self.log_path} not found."
+        try:
+            with open(self.log_path, 'r', encoding='utf-8', errors='ignore') as f:
+                lines = f.readlines()
+                return "".join(lines[-n:])
+        except Exception as e:
+            return f"Error reading log: {str(e)}"
+
 
 # RAG and Model decision
 class SearchCompilationInstruction:
