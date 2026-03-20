@@ -4,5 +4,8 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/oss-fuzz" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/process/project/espeak-ng" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/process/project/espeak-ng-source" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/process/project/swift-nio" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/process/project/trafficserver" vcs="Git" />
   </component>
 </project>
