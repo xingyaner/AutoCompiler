@@ -67,5 +67,6 @@ def search_agent(question):
     # 注意：这里的 template 变量应在 Config.py 中定义
     agent_prompt = PromptTemplate.from_template(template) 
     agent = create_react_agent(llm=llm, tools=tools, prompt=agent_prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=5)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, max_iterations=5,
+                                   handle_parsing_errors=True)
     return agent_executor.invoke({"input": question})

@@ -82,7 +82,7 @@ def start_compile_oss_fuzz(project_info, log_dir, retry):
 
     logging.info(f"========== STARTING DEEP REPAIR: {proj_name} ==========")
 
-    ITER_LIMIT = 40
+    ITER_LIMIT = 24
     stats = {
         "is_success": False, "discussion_triggered": "NO", "repair_rounds": 0,
         "total_tokens": 0, "total_files_modified": 0, "total_lines_modified": 0,
@@ -172,7 +172,7 @@ def start_compile_oss_fuzz(project_info, log_dir, retry):
 
                 stats["val_report"] = val_res["report"]
                 if val_res["is_success"]:
-                    logging.info(f"✅ [SUCCESS] Correct fix verified (Step 1 & 6 passed).")
+                    logging.info(f"✅ [SUCCESS] Correct fix verified (Step 2 passed).")
                     stats["is_success"] = True
                     break
                 else:
@@ -203,8 +203,7 @@ def start_compile_oss_fuzz(project_info, log_dir, retry):
     src_f, src_l = get_diff_metrics(software_local_path, project_info["software_sha"])
     cfg_f, cfg_l = get_diff_metrics(oss_fuzz_local_path, project_info["oss_fuzz_sha"])
 
-    report = f"""
-============================================================
+    report = f"""============================================================
 🏁 FINAL BASELINE REPORT: {proj_name}
 ------------------------------------------------------------
   - [RESULT]           {'✅ SUCCESS' if stats['is_success'] else '❌ FAILURE'}
@@ -223,6 +222,9 @@ def start_compile_oss_fuzz(project_info, log_dir, retry):
 ============================================================
 """
     logging.info(report)
+    final_report_file = os.path.join(log_dir, f"{proj_name}_final_report.txt")
+    with open(final_report_file, 'w', encoding='utf-8') as f_report:
+        f_report.write(report)
     with open(os.path.join(log_dir, f"{proj_name}_trace_{timestamp}.json"), 'w') as f_trace:
         json.dump([str(s) for s in full_execution_trace], f_trace, indent=2)
 

@@ -15,6 +15,8 @@ import re
 from tqdm import tqdm
 import sys
 import signal
+import stat
+import select
 from typing import List, Optional, Dict
 from langchain.tools import tool
 from googleapiclient.discovery import build
@@ -113,94 +115,248 @@ def _cleanup_environment(oss_fuzz_path: str, project_name: str):
 
 def run_fuzz_build_and_validate(project_name, oss_fuzz_path, sanitizer, engine, architecture, mount_path,
                                 build_log_path) -> dict:
-    """
-    严谨物理验证：
-    成功标准 = (Step 1 找到真实 Fuzzer) AND (Step 6 运行有速率) AND (日志末尾无 Error)
-    """
-    _cleanup_environment(oss_fuzz_path, project_name)  # 内部已含物理清空逻辑
-
-    report = {k: {"status": "fail", "details": "N/A"} for k in
-              ["step_1_static", "step_2_asan", "step_3_engine", "step_4_logic", "step_5_deps", "step_6_runtime"]}
+    """执行物理验证：唯一成功标准为 Step 2 (check_build) 通过。"""
+    _cleanup_environment(oss_fuzz_path, project_name)
+    report = {
+        "step_1_official_list": {"status": "pending", "details": "N/A"},
+        "step_2_infra_compliance": {"status": "pending", "details": "N/A"},
+        "step_3_sanitizer_injected": {"status": "pending", "details": "N/A"},
+        "step_4_engine_control": {"status": "pending", "details": "N/A"},
+        "step_5_logic_linkage": {"status": "pending", "details": "N/A"},
+        "step_6_runtime_stability": {"status": "pending", "details": "N/A"},
+    }
 
     helper_path = os.path.join(oss_fuzz_path, "infra/helper.py")
-    cmd = [sys.executable, helper_path, "build_fuzzers", project_name, mount_path, "--sanitizer", sanitizer, "--engine",
-           engine, "--architecture", architecture]
-
-    shell = HostShell(build_log_path)
-    build_obs = shell.execute_command(" ".join(cmd))
-
-    # 维度 A: 日志负向过滤 (检查最后10行)
-    log_content = build_obs.strip().split('\n')
-    last_10_lines = [l.lower() for l in log_content if l.strip()][-10:]
-    fail_keywords = ["error:", "failed:", "timeout", "timed out", "build failed"]
-    log_ok = not any(any(kw in line for kw in fail_keywords) for line in last_10_lines)
-
-    # Step 1: 产物识别 (回归原始严谨逻辑)
     out_dir = os.path.join(oss_fuzz_path, "build", "out", project_name)
-    target_bin = None
-    if os.path.exists(out_dir):
-        ignore_prefix = ('afl-', 'llvm-', 'jazzer')
-        ignore_ext = ('.so', '.a', '.la', '.jar', '.class', '.zip', '.dict', '.options', '.txt')
 
-        # 遍历目录寻找真正的可执行 Fuzzer
-        for f in sorted(os.listdir(out_dir)):
-            f_path = os.path.join(out_dir, f)
-            if os.path.isfile(f_path) and os.access(f_path, os.X_OK):
-                if not f.lower().startswith(ignore_prefix) and not f.lower().endswith(ignore_ext):
-                    report["step_1_static"] = {"status": "pass", "details": f"Target: {f}"}
-                    target_bin = f
-                    break
+    def append_build_log(text: str) -> None:
+        with open(build_log_path, 'a', encoding='utf-8', errors='ignore') as f_build:
+            f_build.write(text)
+            f_build.flush()
 
-    # 如果找到了目标且日志通过，进行后续审计
-    if target_bin and log_ok:
-        p_path = os.path.join(out_dir, target_bin)
-
-        # Step 2-5: 仅供参考，不影响判定
-        syms = subprocess.run(['nm', p_path], capture_output=True, text=True, errors='ignore').stdout
-        if "__asan" in syms:
-            report["step_2_asan"] = {"status": "pass", "details": "ASan Injected"}
-
-        eng_key = "LLVMFuzzerRunDriver" if engine == "libfuzzer" else "__afl_"
-        if eng_key in syms:
-            report["step_3_engine"] = {"status": "pass", "details": f"Engine {engine} Linked"}
-
-        if _auto_discover_project_symbols(p_path, project_name):
-            report["step_4_logic"] = {"status": "pass", "details": "Logic Discovered"}
-
-        # Step 6: 30s 压力测试 (关键判定项)
-        run_cmd = [sys.executable, helper_path, "run_fuzzer", "--engine", engine, "--sanitizer", sanitizer,
-                   project_name, target_bin]
-        if engine == "libfuzzer": run_cmd.extend(["--", "-max_total_time=30"])
-
-        proc = subprocess.Popen(run_cmd, cwd=oss_fuzz_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                                bufsize=1, preexec_fn=os.setsid)
-        has_activity = False
-        start_t = time.time()
+    def is_elf(filepath: str) -> bool:
         try:
-            while time.time() - start_t < 45:  # 给予一定缓冲时间
-                line = proc.stdout.readline()
-                if not line and proc.poll() is not None: break
-                if any(k in line for k in ["exec/s:", "corp:", "exec speed", "total execs"]):
-                    has_activity = True
-                    # 可以在这里记录速率详情到 details
-        finally:
+            result = subprocess.run(['file', filepath], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=False)
+            if b'ELF' in result.stdout:
+                return True
+        except Exception:
+            pass
+        try:
+            with open(filepath, 'rb') as f_binary:
+                return f_binary.read(4) == b'\x7fELF'
+        except Exception:
+            return False
+
+    def is_shell_script(filepath: str) -> bool:
+        try:
+            result = subprocess.run(['file', filepath], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=False)
+            return b'shell script' in result.stdout
+        except Exception:
+            return False
+
+    def find_local_fuzz_targets(directory: str, target_engine: str) -> list:
+        fuzz_targets = []
+        if not os.path.exists(directory):
+            return fuzz_targets
+        executable_mask = stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+        for filename in os.listdir(directory):
+            path = os.path.join(directory, filename)
+            if filename == 'llvm-symbolizer' or filename.startswith('afl-') or filename.startswith('jazzer_'):
+                continue
+            if filename == 'centipede' or not os.path.isfile(path):
+                continue
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except:
-                pass
-            proc.wait()
+                if not (os.stat(path).st_mode & executable_mask):
+                    continue
+            except Exception:
+                continue
+            if not is_elf(path) and not is_shell_script(path):
+                continue
+            if target_engine not in {'none', 'wycheproof'}:
+                try:
+                    with open(path, 'rb') as file_handle:
+                        if b'LLVMFuzzerTestOneInput' not in file_handle.read():
+                            continue
+                except Exception:
+                    continue
+            fuzz_targets.append(filename)
+        return fuzz_targets
 
-        if has_activity:
-            report["step_6_runtime"] = {"status": "pass", "details": "Execution active"}
+    def check_validation_limit(start_time: float, timeout: float, cmd_info: str) -> float:
+        elapsed = time.time() - start_time
+        if elapsed >= timeout:
+            raise subprocess.TimeoutExpired(cmd_info, timeout)
+        return timeout - elapsed
+
+    try:
+        build_cmd = [
+            sys.executable, helper_path, "build_fuzzers", project_name, mount_path,
+            "--sanitizer", sanitizer, "--engine", engine, "--architecture", architecture
+        ]
+        logging.info(f"[-] [Validation Build]: {' '.join(build_cmd)}")
+        append_build_log(f"[Validation Build] {' '.join(build_cmd)}\n")
+
+        build_start = time.time()
+        build_timeout = 5400
+        process = subprocess.Popen(
+            build_cmd, cwd=oss_fuzz_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, errors='ignore', bufsize=1
+        )
+        try:
+            for line in iter(process.stdout.readline, ''):
+                logging.info(f"  [STDOUT] {line.rstrip()}")
+                append_build_log(line)
+                if time.time() - build_start > build_timeout:
+                    raise subprocess.TimeoutExpired(build_cmd, build_timeout)
+                if process.poll() is not None:
+                    break
+            process.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+            append_build_log(f"\nRESULT: failed (compilation timeout after {build_timeout}s)\n")
+            return {"is_success": False, "report": report}
+
+        if process.returncode != 0:
+            append_build_log("\nRESULT: failed (compilation error)\n")
+            return {"is_success": False, "report": report}
+
+        validation_start_time = time.time()
+        validation_timeout = 1200.0
+
+        targets = find_local_fuzz_targets(out_dir, engine)
+        target_bin = targets[0] if targets else None
+        if target_bin:
+            report["step_1_official_list"] = {
+                "status": "pass",
+                "details": f"{len(targets)} target(s) (primary: {target_bin})"
+            }
         else:
-            report["step_6_runtime"] = {"status": "fail", "details": "No activity/rate detected"}
+            report["step_1_official_list"] = {"status": "fail", "details": "No recognized fuzzers"}
 
-    # 终极判定：1 和 6 必须 PASS，且日志无错误
-    is_success = (report["step_1_static"]["status"] == "pass") and \
-                 (report["step_6_runtime"]["status"] == "pass") and \
-                 log_ok
+        remaining_time = check_validation_limit(validation_start_time, validation_timeout, "check_build")
+        check_cmd = [
+            sys.executable, helper_path, "check_build", project_name,
+            "--sanitizer", sanitizer, "--engine", engine, "--architecture", architecture
+        ]
+        try:
+            check_res = subprocess.run(
+                check_cmd, cwd=oss_fuzz_path, capture_output=True, text=True,
+                timeout=min(300, remaining_time), errors='ignore'
+            )
+            append_build_log("\n[Validation Check Build]\n" + check_res.stdout + check_res.stderr)
+            if check_res.returncode == 0:
+                report["step_2_infra_compliance"] = {"status": "pass", "details": "check_build passed"}
+            else:
+                details = (check_res.stderr or check_res.stdout or "check_build failed").strip()[:200]
+                report["step_2_infra_compliance"] = {"status": "fail", "details": details}
+        except subprocess.TimeoutExpired:
+            report["step_2_infra_compliance"] = {"status": "fail", "details": "check_build timeout"}
 
-    return {"is_success": is_success, "report": report}
+        if target_bin:
+            target_path = os.path.join(out_dir, target_bin)
+            try:
+                remaining_time = check_validation_limit(validation_start_time, validation_timeout, "nm_check")
+                nm_res = subprocess.run(['nm', target_path], capture_output=True, text=True,
+                                        timeout=min(30, remaining_time), errors='ignore')
+                nm_stdout = nm_res.stdout
+            except Exception:
+                remaining_time = check_validation_limit(validation_start_time, validation_timeout, "nm_check_shell")
+                nm_res = subprocess.run(
+                    [sys.executable, helper_path, "shell", project_name, "-c", f"nm /out/{target_bin}"],
+                    cwd=oss_fuzz_path, capture_output=True, text=True, timeout=min(60, remaining_time), errors='ignore'
+                )
+                nm_stdout = nm_res.stdout
+            report["step_3_sanitizer_injected"] = {
+                "status": "pass" if "__asan" in nm_stdout else "warning",
+                "details": "ASan symbol found" if "__asan" in nm_stdout else "Missing ASan symbol"
+            }
+            engine_linked = "LLVMFuzzerRunDriver" in nm_stdout or "__afl_" in nm_stdout
+            report["step_4_engine_control"] = {
+                "status": "pass" if engine_linked else "warning",
+                "details": "Engine symbols found" if engine_linked else "Engine symbols not found"
+            }
+            logic_linked = bool(_auto_discover_project_symbols(target_path, project_name))
+            report["step_5_logic_linkage"] = {
+                "status": "pass" if logic_linked else "warning",
+                "details": "Project symbols discovered" if logic_linked else "Project symbols not discovered"
+            }
+        else:
+            for step in ["step_3_sanitizer_injected", "step_4_engine_control", "step_5_logic_linkage"]:
+                report[step] = {"status": "skip", "details": "No primary target"}
+
+        if target_bin and report["step_2_infra_compliance"]["status"] == "pass":
+            run_cmd = [sys.executable, helper_path, "run_fuzzer", "--engine", engine, "--sanitizer", sanitizer,
+                       project_name, target_bin]
+            remaining_time = check_validation_limit(validation_start_time, validation_timeout, "run_fuzzer")
+            stability_proc = subprocess.Popen(
+                run_cmd, cwd=oss_fuzz_path, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, errors='ignore', bufsize=1, preexec_fn=os.setsid
+            )
+            start_time = time.time()
+            log_lines = []
+            timed_out = False
+            try:
+                while True:
+                    check_validation_limit(validation_start_time, min(validation_timeout, remaining_time), "run_fuzzer_runtime")
+                    elapsed = time.time() - start_time
+                    if elapsed >= 35.0:
+                        timed_out = True
+                        break
+                    rlist, _, _ = select.select([stability_proc.stdout], [], [], min(35.0 - elapsed, 0.5))
+                    if stability_proc.stdout in rlist:
+                        line = stability_proc.stdout.readline()
+                        if not line:
+                            break
+                        log_lines.append(line)
+                    elif stability_proc.poll() is not None:
+                        break
+            finally:
+                try:
+                    os.killpg(os.getpgid(stability_proc.pid), signal.SIGTERM)
+                except Exception:
+                    pass
+                try:
+                    stability_proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    try:
+                        os.killpg(os.getpgid(stability_proc.pid), signal.SIGKILL)
+                    except Exception:
+                        pass
+                    stability_proc.wait()
+                _cleanup_environment(oss_fuzz_path, project_name)
+
+            log_content = "".join(log_lines)
+            exit_code = 124 if timed_out else stability_proc.returncode
+            progress_pattern = r'(exec/s:|cov:|corp:|exec speed|corpus count|cycles done|execs/sec|active execution rate)'
+            has_progress = bool(re.search(progress_pattern, log_content, re.IGNORECASE))
+            if exit_code == 124 and has_progress:
+                report["step_6_runtime_stability"] = {"status": "pass", "details": "Time-limited run completed"}
+            elif exit_code == 0 and any(kw in log_content for kw in ["Done", "fuzzing finished"]):
+                report["step_6_runtime_stability"] = {"status": "pass", "details": "Finished normally"}
+            elif "SUMMARY:" in log_content or "AddressSanitizer" in log_content or "Segmentation fault" in log_content:
+                report["step_6_runtime_stability"] = {"status": "fail", "details": "RUNTIME_CRASH"}
+            elif exit_code in [1, 127] or any(k in log_content for k in ["error while loading shared libraries", "undefined reference", "Usage:"]):
+                report["step_6_runtime_stability"] = {"status": "fail", "details": "CONFIG_ERROR"}
+            elif exit_code == 124 and not has_progress:
+                report["step_6_runtime_stability"] = {"status": "fail", "details": "DEAD_PROCESS"}
+            elif exit_code not in [0, 124, None]:
+                report["step_6_runtime_stability"] = {"status": "fail", "details": f"Exit code {exit_code}"}
+            else:
+                report["step_6_runtime_stability"] = {"status": "pass", "details": "No failure criteria matched"}
+        else:
+            report["step_6_runtime_stability"] = {"status": "skip", "details": "Skipped"}
+
+        is_success = report["step_2_infra_compliance"]["status"] == "pass"
+        append_build_log(f"\nRESULT: {'success' if is_success else 'failed'}\n")
+        return {"is_success": is_success, "report": report}
+    except subprocess.TimeoutExpired:
+        append_build_log("\nRESULT: failed (validation timeout)\n")
+        return {"is_success": False, "report": report}
+    except Exception as e:
+        logging.error(f"Validation failed: {e}")
+        append_build_log(f"\nRESULT: failed ({str(e)})\n")
+        return {"is_success": False, "report": report}
 
 
 class LogReader:

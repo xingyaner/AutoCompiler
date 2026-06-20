@@ -12,20 +12,20 @@ LOG_URL_TEMPLATE=""
 
 ## Multi-Agent Discussion
 # openai
-OPENAI_BASE_URL="https://xingjiabiapi.org/v1"
-OPENAI_MODEL="gpt-5.1"
-OPENAI_EMBEDDING_MODEL="text-embedding-3-large"
-OPENAI_API_KEY="sk-"
+OPENAI_BASE_URL=""
+OPENAI_MODEL=""
+# OPENAI_EMBEDDING_MODEL="text-embedding-3-large"
+OPENAI_API_KEY=""
 
 # claude
-ANTHROPIC_BASE_URL="https://xingjiabiapi.org/v1"
-ANTHROPIC_MODEL="claude-opus-4-5-20251101-thinking"
-ANTHROPIC_API_KEY="sk-"
+ANTHROPIC_BASE_URL=""
+ANTHROPIC_MODEL=""
+ANTHROPIC_API_KEY=""
 
 # deepseek (MasterAgent and MultiAgentDiscussion)
-DEEPSEEK_BASE_URL="https://api.deepseek.com/v1"
-DEEPSEEK_MODEL="deepseek-chat"
-DEEPSEEK_API_KEY="sk-"
+DEEPSEEK_BASE_URL=""
+DEEPSEEK_MODEL=""
+DEEPSEEK_API_KEY=""
 
 PROXY=""
 PASSWORD=""

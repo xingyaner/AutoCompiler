@@ -196,6 +196,13 @@ class SingleAgent:
         else:
             output = agent.invoke({'input':question,'project':project_name,'chat_history':chat_history})
 
+        if not output:
+            raise ValueError("empty model output.")
+
+        if isinstance(output, dict) and output.get("output") == "Agent stopped due to max iterations.":
+            raise ValueError("agent stopped due to max iterations.")
+
+        result = None
         if output:
             if ("{" not in output or "}" not in output) and type(output) != dict:
                 print(type(output))
@@ -203,6 +210,15 @@ class SingleAgent:
             result = parse_json(output)
             if result == "ERR_SYNTAX":
                 raise ValueError("incomplete JSON format.")
+            required_keys = {"reasoning", "solution", "confidence_level"}
+            payload = result
+            if isinstance(result, dict) and "output" in result and isinstance(result["output"], str):
+                payload = parse_json(result["output"])
+            if payload == "ERR_SYNTAX":
+                raise ValueError("incomplete JSON payload format.")
+            if not isinstance(payload, dict) or not required_keys.issubset(payload.keys()):
+                raise ValueError("missing required discussion fields.")
+
         return result
     
     def debate(self, template, question, project_name, results, rounds):
